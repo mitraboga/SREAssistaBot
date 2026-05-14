@@ -1064,7 +1064,3 @@ Common issues:
 </p>
 
 ---
-
-## License
-
-MIT License. See `LICENSE`.

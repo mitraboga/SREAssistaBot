@@ -1,168 +1,415 @@
-# SRE Assistant Agent
+# SRE AssistaBot
 
-A powerful Site Reliability Engineering (SRE) assistant built with Google's Agent Development Kit (ADK), featuring specialized agents for AWS cost analysis, Kubernetes operations, and operational best practices.
+SRE AssistaBot is a Slack-style Site Reliability Engineering assistant built with
+Google's Agent Development Kit (ADK). It provides an SRE-oriented chat interface
+for incident triage, reliability reviews, AWS operations, AWS cost analysis, and
+Kubernetes operations.
 
-![Cost Reporting Demo](https://github.com/serkanh/static-files/blob/main/gifs/cost-reporting-demo.gif?raw=true)
+The project started as an MVP Slack bot and has been extended into a more
+complete local operations assistant with multiple model providers, a background
+service runner, ADK Web UI testing, health checks, and read-only infrastructure
+tooling.
 
-## 🚀 Quick Start
+![SRE AssistaBot demo](assets/SRE_Assista_Bot_Demo.gif)
 
-### Prerequisites
+## What This Project Does
 
-- Docker and Docker Compose
-- AI Provider API key (see [AI Model Configuration](#-ai-model-configuration) below)
-- (Optional) AWS credentials and Kubernetes config for respective features
+SRE AssistaBot lets an engineer ask operational questions in Slack threads or
+through the ADK Web UI. The root SRE agent can answer general reliability
+questions directly and, when full model mode is enabled, delegate specialized
+requests to sub-agents.
 
-### 1. Clone and Setup
+Primary workflows:
 
-```bash
-git clone <your-repo-url>
-cd sre-bot
+- Create incident briefs from messy incident reports.
+- Generate first 15-minute incident response plans.
+- Review system designs from an SRE perspective.
+- Recommend SLIs, SLOs, alerts, dashboards, and runbook steps.
+- Analyze AWS cost and usage patterns when AWS credentials are configured.
+- Inspect AWS infrastructure when AWS credentials are configured.
+- Inspect Kubernetes cluster state through read-only `kubectl` tools.
+- Keep Slack thread context through ADK sessions.
 
-# Copy environment files and customize
-cp .env.example .env
-cp agents/.env.example agents/.env
-cp slack_bot/.env.example slack_bot/.env
+## Current Status
+
+Implemented and tested:
+
+- Slack bot integration using Slack Socket Mode.
+- ADK API server for programmatic sessions and `/run` calls.
+- ADK Web UI for local browser-based testing.
+- Root SRE orchestrator agent.
+- AWS Cost sub-agent.
+- AWS Core operations sub-agent.
+- Kubernetes operations sub-agent.
+- Multiple model providers:
+  - Ollama local demo mode.
+  - Amazon Bedrock.
+  - Google Gemini.
+  - Anthropic Claude.
+- Local background process manager for day-to-day use.
+- Optional Windows login task for auto-start.
+- Docker Compose stack for containerized local development.
+- Health checks, request logging, response chunking, Slack event de-dupe, and
+  safer environment handling.
+- Tests and linting.
+
+Validation at completion:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests -q
+.\.venv\Scripts\python.exe -m ruff check .
 ```
 
-### 2. Configure Environment
+Latest local result:
 
-Edit `agents/.env` with your AI provider credentials (see [AI Model Configuration](#-ai-model-configuration) for details):
-
-```bash
-# Option 1: Google Gemini (Recommended)
-GOOGLE_API_KEY=your_google_api_key_here
-GOOGLE_AI_MODEL=gemini-2.0-flash  # optional
-
-# Option 2: Anthropic Claude
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-ANTHROPIC_MODEL=claude-3-5-sonnet-20240620  # optional
-
-# Option 3: AWS Bedrock (requires AWS credentials)
-BEDROCK_INFERENCE_PROFILE=arn:aws:bedrock:us-west-2:812201244513:inference-profile/us.anthropic.claude-opus-4-1-20250805-v1:0
-
-# Optional: AWS and Kubernetes configurations
-AWS_PROFILE=your_aws_profile
-KUBE_CONTEXT=your_kube_context
+```text
+61 passed, 1 skipped
+All checks passed
 ```
 
-### 3. Start the Agent
+## Architecture
 
-```bash
-# Build and start all services
-docker compose build
-docker compose up -d
-
-# Check if services are running
-docker compose ps
+```text
+Slack / ADK Web UI / API clients
+        |
+        v
+FastAPI ADK server: agents/sre_agent/serve.py
+        |
+        v
+Root SRE agent: agents/sre_agent/agent.py
+        |
+        +-- aws_cost_agent
+        |   +-- Cost Explorer tools
+        |   +-- service, account, tag, monthly, trend, and optimization analysis
+        |
+        +-- aws_core_agent
+        |   +-- AWS account, EC2, S3, RDS, region, and connectivity checks
+        |
+        +-- kubernetes_agent
+            +-- read-only kubectl tools for contexts, nodes, pods,
+                deployments, services, pod logs, and cluster summary
 ```
 
-### 4. Access the Interface
+Main directories:
 
-- **Web Interface**: <http://localhost:8000>
-- **API Server**: <http://localhost:8001>
-- **Health Check**: <http://localhost:8000/health>
-
-## 🏗️ Architecture
-
-The SRE bot follows a modular architecture with specialized sub-agents:
-
-```
+```text
 agents/sre_agent/
-├── agent.py              # Main SRE agent orchestrator
-├── serve.py              # FastAPI server with health checks
-├── utils.py              # Shared utilities
-└── sub_agents/
-    └── aws_cost/         # AWS cost analysis module
-        ├── agent.py      # Agent configuration
-        ├── tools/        # Cost analysis tools
-        └── prompts/      # Agent instructions
+  agent.py                         Root ADK SRE agent and delegation logic
+  serve.py                         FastAPI ADK API server with health checks
+  settings.py                      Session DB configuration
+  utils.py                         Model selection and shared helpers
+  aws_auth/                        Optional role-based AWS auth layer
+  sub_agents/
+    aws_cost/                      AWS cost analysis sub-agent
+    aws_core/                      AWS infrastructure operations sub-agent
+    kubernetes/                    Kubernetes operations sub-agent
+
+slack_bot/
+  main.py                          Slack Socket Mode and Events API integration
+  modules/health.py                Slack listener health check
+
+tests/                             Unit tests for auth, tools, providers, and k8s
 ```
 
-## 🛠️ Features
+## Model Modes
 
-### AWS Cost Analysis
+The project supports four provider paths. Provider selection can be automatic,
+but local scripts let you force the provider explicitly.
 
-- Retrieve and analyze AWS cost data for specific time periods
-- Filter costs by services, tags, or accounts
-- Calculate cost trends over time
-- Provide average daily costs (including or excluding weekends)
-- Identify the most expensive AWS accounts
-- Compare costs across different time periods
-- Generate cost optimization recommendations
+### Ollama Demo Mode
 
-### Operational Excellence
+Ollama mode is the free local demo path.
 
-- Infrastructure monitoring and troubleshooting
-- Operational best practices and recommendations
-- Performance optimization guidance
-- Natural language interaction with technical systems
+Use it when:
 
-## 🔧 Development
+- You do not want paid API usage.
+- You want to demo Slack integration locally.
+- You want basic SRE guidance without cloud billing.
 
-### Code Quality
+Important behavior:
 
-```bash
-# Run linting and formatting
-ruff check .
-ruff format .
-ruff check . --fix
+- Uses a local model through Ollama.
+- Defaults to `qwen2.5:1.5b`.
+- Enables `SRE_OLLAMA_SIMPLE_MODE=true`.
+- Disables active sub-agent handoffs for stability with small local models.
+- Still answers as an SRE assistant, but does not actively query AWS or
+  Kubernetes tools in simple mode.
 
-# Run pre-commit hooks manually
-pre-commit run --all-files
+Start Ollama mode:
+
+```powershell
+.\start-assistabot.ps1 -Provider ollama -Restart
 ```
 
-### Local Development (Optional)
+### Amazon Bedrock Mode
 
-For rapid development and testing:
+Bedrock mode is the AWS-native paid model path used for stronger responses and
+full ADK delegation.
 
-```bash
-# Install dependencies
-pip install -r agents/sre_agent/requirements.txt
-pip install -r requirements-dev.txt
+Use it when:
 
-# Use built-in ADK web interface for rapid bot testing
-adk web --session_service_uri=postgresql://postgres:password@localhost:5432/srebot
+- You want better model quality than local Ollama.
+- You want sub-agent delegation enabled.
+- You are comfortable with AWS Bedrock usage charges.
 
-# Or use custom serve.py for API-only development
-cd agents/sre_agent
-python serve.py
+Recommended smoke-test model:
+
+```env
+BEDROCK_MODEL_ID=amazon.nova-micro-v1:0
+BEDROCK_REGION=us-east-1
 ```
 
-## 📊 Docker Services
+Authentication options:
 
-### Available Services
+```env
+# Option A: Bedrock API key
+BEDROCK_API_KEY=your_bedrock_api_key_here
 
-- **sre-bot-web**: Web interface using ADK's built-in UI (port 8000)
-- **sre-bot-api**: API-only server using custom `serve.py` (port 8001)
-- **slack-bot**: Slack integration service (port 8002)
-- **postgres**: PostgreSQL database for session persistence
+# Option B: official AWS bearer-token env var
+AWS_BEARER_TOKEN_BEDROCK=your_bedrock_api_key_here
 
-### Service Management
-
-```bash
-# Start specific services
-docker compose up -d sre-bot-web    # Web interface
-docker compose up -d sre-bot-api    # API server
-docker compose up -d slack-bot      # Slack bot
-
-# View logs
-docker compose logs [service-name]
-
-# Stop services
-docker compose down
+# Option C: normal AWS credentials/profile
+AWS_PROFILE=your_aws_profile
+AWS_REGION=us-east-1
 ```
 
-## 🔌 API Usage
+Start Bedrock mode:
 
-### Create a Session
+```powershell
+.\start-assistabot.ps1 -Provider bedrock -Restart
+```
+
+Bedrock calls are billable AWS usage. Use short prompts while testing.
+
+### Google Gemini Mode
+
+Gemini is supported through Google AI Studio API keys.
+
+```env
+GOOGLE_API_KEY=your_google_api_key_here
+GOOGLE_AI_MODEL=gemini-2.0-flash
+```
+
+Start Gemini mode:
+
+```powershell
+.\start-assistabot.ps1 -Provider google -Restart
+```
+
+### Anthropic Claude Mode
+
+Claude is supported through LiteLLM.
+
+```env
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_MODEL=claude-3-5-sonnet-20240620
+```
+
+Start Claude mode:
+
+```powershell
+.\start-assistabot.ps1 -Provider anthropic -Restart
+```
+
+### Automatic Provider Priority
+
+If `MODEL_PROVIDER` is not forced, the code checks providers in this order:
+
+1. Google Gemini
+2. Anthropic Claude
+3. Amazon Bedrock
+
+The local scripts are preferred because they make the selected provider
+explicit and avoid confusion when multiple keys exist in `agents/.env`.
+
+## Recommended Local Setup
+
+### 1. Create a virtual environment
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
+.\.venv\Scripts\python.exe -m pip install -r agents\sre_agent\requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r slack_bot\requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
+
+### 2. Create environment files
+
+```powershell
+Copy-Item agents\env.example agents\.env
+Copy-Item slack_bot\env.example slack_bot\.env
+```
+
+Edit:
+
+- `agents/.env` for model provider, AWS, and Kubernetes settings.
+- `slack_bot/.env` for Slack tokens.
+
+Do not commit `.env` files.
+
+### 3. Configure Slack
+
+Create a Slack app at:
+
+```text
+https://api.slack.com/apps
+```
+
+Required bot scopes:
+
+```text
+app_mentions:read
+channels:history
+channels:join
+chat:write
+chat:write.public
+im:history
+im:read
+im:write
+```
+
+Enable Socket Mode and create an app-level token with:
+
+```text
+connections:write
+```
+
+Set these values in `slack_bot/.env`:
+
+```env
+SLACK_BOT_TOKEN=xoxb-your-token
+SLACK_SIGNING_SECRET=your-signing-secret
+SLACK_APP_TOKEN=xapp-your-app-token
+```
+
+The local Slack runner forces:
+
+```env
+SLACK_SOCKET_MODE=true
+SRE_AGENT_API_URL=http://localhost:8001
+```
+
+Socket Mode avoids needing ngrok or a public Events API URL for local testing.
+
+## Daily Local Operation
+
+Start the Slack bot and ADK API in the background:
+
+```powershell
+.\start-assistabot.ps1 -Provider bedrock -Restart
+```
+
+or:
+
+```powershell
+.\start-assistabot.ps1 -Provider ollama -Restart
+```
+
+Check status:
+
+```powershell
+.\status-assistabot.ps1
+```
+
+Stop all background services:
+
+```powershell
+.\stop-assistabot.ps1
+```
+
+Tail logs:
+
+```powershell
+Get-Content .runtime\logs\agent.out.log -Wait
+Get-Content .runtime\logs\slack.out.log -Wait
+```
+
+### Start With ADK Web UI
+
+The ADK Web UI is optional. It lets you test the agent directly in the browser
+without Slack.
+
+```powershell
+.\start-assistabot.ps1 -Provider bedrock -WithWeb -Restart
+```
+
+Then open:
+
+```text
+http://localhost:8000/dev-ui/
+```
+
+### Auto-Start At Windows Login
+
+Install the Windows scheduled task:
+
+```powershell
+.\install-assistabot-login-task.ps1 -Provider bedrock -WithWeb
+```
+
+If Windows returns `Access is denied`, run PowerShell as Administrator and retry.
+
+Remove the login task:
+
+```powershell
+.\uninstall-assistabot-login-task.ps1
+```
+
+## Example Slack Prompts
+
+Incident command:
+
+```text
+@sre-assista-bot Act as the incident commander. We have a 5xx spike on checkout,
+payment failures, and customer complaints from NA. Give me an incident brief,
+first 15-minute plan, risks, rollback criteria, and customer comms draft.
+```
+
+Technical triage:
+
+```text
+@sre-assista-bot Based on that incident brief, create a technical triage
+checklist for the on-call engineer. Include the exact metrics, logs, dashboards,
+database checks, dependency checks, and rollback validation steps we should run
+in the next 30 minutes. Prioritize read-only checks first.
+```
+
+Reliability review:
+
+```text
+@sre-assista-bot Review this production checkout design from an SRE perspective:
+frontend -> API gateway -> payments service -> Postgres. Target availability is
+99.9%, peak traffic is 500 requests/minute, and the main concerns are payment
+failures, duplicate charges, DB saturation, and slow checkout. Give me risks,
+SLIs/SLOs, alerts, observability gaps, and highest-priority improvements.
+```
+
+Kubernetes operations:
+
+```text
+@sre-assista-bot How many pods are running in the default namespace, and are any
+pods crash looping?
+```
+
+AWS cost analysis:
+
+```text
+@sre-assista-bot Show me the top AWS cost drivers this month and compare them
+against last month. Exclude Support and Tax.
+```
+
+## API Usage
+
+Create a session:
 
 ```bash
 curl -X POST http://localhost:8001/apps/sre_agent/users/u_123/sessions/s_123 \
   -H "Content-Type: application/json" \
-  -d '{"state": {"key1": "value1"}}'
+  -d '{"state": {"source": "manual-test"}}'
 ```
 
-### Send a Message
+Send a message:
 
 ```bash
 curl -X POST http://localhost:8001/run \
@@ -173,291 +420,224 @@ curl -X POST http://localhost:8001/run \
     "session_id": "s_123",
     "new_message": {
       "role": "user",
-      "parts": [{"text": "How many pods are running in the default namespace?"}]
+      "parts": [{"text": "Create an incident brief for checkout 5xx errors."}]
     }
   }'
 ```
 
-## 💬 Slack Integration
+Health checks:
 
-### Setup Slack Bot
-
-1. **Configure Slack App** (see detailed instructions below)
-2. **Set environment variables** in `slack_bot/.env`:
-
-   ```bash
-   SLACK_BOT_TOKEN=xoxb-your-slack-bot-token
-   SLACK_SIGNING_SECRET=your-slack-signing-secret
-   SLACK_APP_TOKEN=xapp-your-slack-app-token
-   ```
-
-3. **Start the Slack bot**:
-
-   ```bash
-   docker compose up -d slack-bot
-   ```
-
-### Creating the Slack App
-
-1. Go to <https://api.slack.com/apps> and click "Create New App"
-2. Name it and choose a workspace
-3. **Add Bot Token Scopes**:
-   - `app_mentions:read` - View messages that mention the bot
-   - `chat:write` - Send messages
-   - `channels:join` - Join channels
-   - `chat:write.public` - Send messages to channels the bot isn't in
-4. **Install App to Workspace** and get approval if needed
-5. **Set up Event Subscriptions** pointing to your ngrok URL
-6. **Configure Slash Commands** if desired
-
-### Example App Manifest
-
-```yaml
-display_information:
-  name: sre-bot
-features:
-  bot_user:
-    display_name: sre-bot
-    always_online: false
-oauth_config:
-  scopes:
-    bot:
-      - app_mentions:read
-      - channels:join
-      - channels:history
-      - chat:write
-      - chat:write.public
-      - commands
-      - reactions:read
-settings:
-  event_subscriptions:
-    request_url: https://your-ngrok-url.ngrok-free.app/slack/events
-    bot_events:
-      - app_mention
-  org_deploy_enabled: false
-  socket_mode_enabled: false
+```text
+http://localhost:8001/health
+http://localhost:8001/health/readiness
+http://localhost:8001/health/liveness
 ```
 
-## 📁 Environment Configuration
+## Docker Compose
 
-### Service-Specific Environment Files
+Docker Compose remains available for containerized local development.
 
-The SRE bot uses separate environment files for better organization:
+Services:
 
-- **`.env`**: Main Docker Compose configuration
-- **`agents/.env`**: SRE Agent specific settings
-- **`slack_bot/.env`**: Slack Bot configuration
+- `sre-bot-web`: ADK Web UI on port `8000`.
+- `sre-bot-api`: ADK API server on port `8001`.
+- `slack-bot`: Slack integration service on port `8002`.
+- `postgres`: session database.
 
-### Key Environment Variables
+Start the stack:
 
 ```bash
-# Main Configuration (.env)
-GOOGLE_API_KEY=your_google_api_key
-GOOGLE_AI_MODEL=gemini-2.0-flash
-POSTGRES_PASSWORD=postgres
-LOG_LEVEL=INFO
-
-# Agent Configuration (agents/.env)
-PORT=8000
-DB_HOST=localhost
-DB_PORT=5432
-
-# Slack Bot Configuration (slack_bot/.env)
-SLACK_BOT_TOKEN=xoxb-your-token
-SLACK_SIGNING_SECRET=your-secret
-SRE_AGENT_API_URL=http://sre-bot-api:8001
+docker compose up --build
 ```
 
-## 🤖 AI Model Configuration
-
-The SRE bot supports multiple AI providers with automatic provider detection based on your environment variables. The system checks for API keys in priority order and configures the appropriate model.
-
-### Supported Providers
-
-#### 1. Google Gemini (Recommended)
-
-**Best for**: Google Cloud users, fastest setup, most reliable
+Start selected services:
 
 ```bash
-# Required
-GOOGLE_API_KEY=your_google_api_key_here
-
-# Optional (defaults shown)
-GOOGLE_AI_MODEL=gemini-2.0-flash
+docker compose up sre-bot-web
+docker compose up sre-bot-api slack-bot
 ```
 
-**Get API Key**: [Google AI Studio](https://aistudio.google.com/apikey)
-
-#### 2. Anthropic Claude
-
-**Best for**: Advanced reasoning tasks, detailed analysis
+View logs:
 
 ```bash
-# Required
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
-
-# Optional (defaults shown)
-ANTHROPIC_MODEL=claude-3-5-sonnet-20240620
+docker compose logs -f sre-bot-api slack-bot
 ```
 
-**Get API Key**: [Anthropic Console](https://console.anthropic.com/)
+The Windows PowerShell scripts are the recommended path for the current local
+demo because they support provider switching, background execution, and local
+SQLite sessions without requiring Docker Desktop.
 
-#### 3. AWS Bedrock
+## Kubernetes Operations
 
-**Best for**: AWS-native deployments, enterprise compliance
+The Kubernetes sub-agent is read-only. It shells out to `kubectl` with structured
+arguments and never runs mutating commands.
 
-```bash
-# Required
-BEDROCK_INFERENCE_PROFILE=arn:aws:bedrock:us-west-2:812201244513:inference-profile/us.anthropic.claude-opus-4-1-20250805-v1:0
+Tools include:
 
-# AWS credentials also required (one of the following):
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-# OR
+- current context
+- available contexts
+- nodes and readiness
+- pods by namespace or label selector
+- deployments and replica health
+- services
+- pod logs with tail limits
+- cluster summary
+
+Configuration:
+
+```env
+KUBE_CONTEXT=your_kube_context
+# Optional:
+KUBE_NAMESPACE=default
+KUBECTL_PATH=C:\path\to\kubectl.exe
+```
+
+If `kubectl` is missing, the tools return an actionable error instead of
+crashing the agent.
+
+## AWS Operations And Cost Analysis
+
+The AWS sub-agents are available when full model mode is enabled and AWS
+credentials are configured.
+
+AWS Core can help with:
+
+- caller identity
+- AWS connectivity checks
+- region discovery
+- EC2, S3, and RDS summaries
+- account-level operational review
+
+AWS Cost can help with:
+
+- monthly totals
+- current month-to-date cost
+- previous month cost
+- last N months trend
+- spend by service
+- spend by tag
+- spend by linked account
+- most expensive linked account
+- daily averages
+- step-change and trend summaries
+- cost optimization recommendations
+
+Configuration:
+
+```env
 AWS_PROFILE=your_aws_profile
-```
-
-**Setup**: Configure AWS Bedrock access in your AWS account
-
-### Provider Selection Priority
-
-The system automatically selects providers in this order:
-
-1. **Google Gemini** (if `GOOGLE_API_KEY` is set)
-2. **Anthropic Claude** (if `ANTHROPIC_API_KEY` is set)
-3. **AWS Bedrock** (if `BEDROCK_INFERENCE_PROFILE` is set)
-
-### Configuration Examples
-
-#### Minimal Google Setup
-```bash
-# agents/.env
-GOOGLE_API_KEY=AIzaSyD4R5T6Y7U8I9O0P1A2S3D4F5G6H7J8K9L0
-```
-
-#### Anthropic with Custom Model
-```bash
-# agents/.env
-ANTHROPIC_API_KEY=sk-ant-api03-A1B2C3D4E5F6G7H8I9J0
-ANTHROPIC_MODEL=claude-3-opus-20240229
-```
-
-#### Bedrock with Named Profile
-```bash
-# agents/.env
-BEDROCK_INFERENCE_PROFILE=arn:aws:bedrock:us-east-1:123456789012:inference-profile/us.anthropic.claude-3-5-sonnet-20240620-v1:0
-AWS_PROFILE=bedrock-user
 AWS_REGION=us-east-1
 ```
 
-### Troubleshooting AI Configuration
+Optional role-based auth:
 
-#### No Provider Configured
-```
-ERROR: No AI provider configured!
-Please configure one of the following providers...
-```
-**Solution**: Set at least one API key as shown above.
-
-#### AWS Bedrock Credentials Missing
-```
-ERROR: BEDROCK_INFERENCE_PROFILE is set but AWS credentials are not configured
-```
-**Solution**: Configure AWS credentials via environment variables or AWS profiles.
-
-#### Invalid API Key
-```
-ERROR: Authentication failed with provider
-```
-**Solution**: Verify your API key is correct and has necessary permissions.
-
-### Model Recommendations
-
-| Use Case | Recommended Provider | Model | Why |
-|----------|---------------------|--------|------|
-| General SRE Tasks | Google Gemini | `gemini-2.0-flash` | Fast, reliable, good for operations |
-| Complex Analysis | Anthropic Claude | `claude-3-5-sonnet-20240620` | Superior reasoning for complex problems |
-| Enterprise/AWS | AWS Bedrock | `claude-3-opus-*` | Enterprise compliance, AWS integration |
-| Cost-Sensitive | Google Gemini | `gemini-2.0-flash` | Most cost-effective for high-volume usage |
-
-## 🔒 Security
-
-- Store sensitive credentials in environment variables
-- Use separate credentials for production vs development
-- Follow principle of least privilege for AWS and Kubernetes access
-- Never commit actual `.env` files to version control
-- Review audit logs periodically
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Service Communication Issues**:
-
-   ```bash
-   docker compose ps                    # Check if all containers are running
-   docker compose logs [service-name]  # Check specific service logs
-   ```
-
-2. **Database Connection Issues**:
-
-   ```bash
-   docker compose logs postgres         # Check PostgreSQL logs
-   ```
-
-3. **AI Model Configuration Issues**:
-
-   ```bash
-   docker compose logs sre-bot-api | grep -E "(ERROR|model|provider)"
-   ```
-
-   **Common errors**:
-   - `No AI provider configured!` → Set at least one API key
-   - `Bedrock requires valid AWS credentials` → Configure AWS access
-   - `Authentication failed` → Verify API key is valid
-   - See [AI Model Configuration](#-ai-model-configuration) for detailed setup
-
-### Health Checks
-
-```bash
-# Check overall health
-curl http://localhost:8000/health
-
-# Kubernetes readiness/liveness probes
-curl http://localhost:8000/health/readiness
-curl http://localhost:8000/health/liveness
+```env
+AWS_AUTH_ENABLE_CACHING=true
+AWS_AUTH_DEFAULT_REGION=us-east-1
+AWS_AUTH_DEFAULT_ROLE_ARN=arn:aws:iam::123456789012:role/SRERole
+AWS_AUTH_DEFAULT_ACCOUNT_ID=123456789012
+AWS_AUTH_DEFAULT_SESSION_NAME=SREBotSession
 ```
 
-## 📚 Available Tools and Functions
+## Environment Files
 
-### AWS Cost Analysis Tools
+```text
+agents/env.example       template for agent model/AWS/Kubernetes settings
+agents/.env              local agent secrets and settings, not committed
 
-- `get_cost_for_period` - Get costs for specific date ranges
-- `get_monthly_cost` - Monthly cost summaries
-- `get_cost_trend` - Cost trend analysis
-- `get_cost_by_service` - Service-level cost breakdown
-- `get_cost_by_tag` - Tag-based cost analysis
-- `get_most_expensive_account` - Identify highest-cost accounts
+slack_bot/env.example    template for Slack settings
+slack_bot/.env           local Slack secrets, not committed
+```
 
-## 🤝 Contributing
+Important `.gitignore` protections:
 
-1. Follow the established code structure and patterns
-2. Use shared utilities from `agents/sre_agent/utils.py`
-3. Run code quality checks before committing:
+- `.env`
+- `**/.env`
+- `.venv/`
+- `.runtime/`
+- `*.log`
+- `*.db`
+- `postgres_data/`
 
-   ```bash
-   ruff check . --fix
-   ruff format .
-   pre-commit run --all-files
-   ```
+## Development
 
-4. Test your changes with Docker Compose
-5. Update documentation as needed
+Run tests:
 
-## 📄 License
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests -q
+```
 
-[Add your license here]
+Run lint:
 
----
+```powershell
+.\.venv\Scripts\python.exe -m ruff check .
+```
 
-**Need help?** Check the troubleshooting section above or review the service logs with `docker compose logs [service-name]`.
+Format:
+
+```powershell
+.\.venv\Scripts\python.exe -m ruff format .
+```
+
+Pre-commit:
+
+```powershell
+.\.venv\Scripts\pre-commit.exe run --all-files
+```
+
+CI is configured in:
+
+```text
+.github/workflows/ci.yml
+```
+
+## Troubleshooting
+
+Check local service status:
+
+```powershell
+.\status-assistabot.ps1
+```
+
+Restart with a specific provider:
+
+```powershell
+.\start-assistabot.ps1 -Provider bedrock -Restart
+.\start-assistabot.ps1 -Provider ollama -Restart
+```
+
+Common issues:
+
+- Slack does not reply:
+  - Run `.\status-assistabot.ps1`.
+  - Check `.runtime\logs\slack.out.log`.
+  - Verify `SLACK_BOT_TOKEN` and `SLACK_APP_TOKEN`.
+
+- API returns 500:
+  - Check `.runtime\logs\agent.out.log`.
+  - Verify the selected model provider credentials.
+  - If using Ollama, confirm Ollama is running on `localhost:11434`.
+
+- Bedrock fails:
+  - Verify `BEDROCK_API_KEY` or AWS credentials.
+  - Verify `BEDROCK_MODEL_ID` and `BEDROCK_REGION`.
+  - Remember that Bedrock usage is billable.
+
+- Kubernetes tools fail:
+  - Run `kubectl config current-context`.
+  - Verify `KUBE_CONTEXT`.
+  - Set `KUBECTL_PATH` if `kubectl` is not on PATH.
+
+## Security Notes
+
+- Never commit `.env` files.
+- Rotate any key that was accidentally exposed during development.
+- Use least-privilege AWS and Kubernetes credentials.
+- Prefer read-only AWS/IAM/Kubernetes permissions for demos.
+- Bedrock, Gemini, and Claude API calls may incur provider charges.
+- Review logs before sharing them; application logs may contain operational
+  details.
+
+## License
+
+MIT License. See `LICENSE`.

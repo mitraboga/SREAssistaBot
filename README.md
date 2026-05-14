@@ -1,6 +1,25 @@
-# SRE AssistaBot
+<div align="center">
 
-SRE AssistaBot is a Slack-style Site Reliability Engineering assistant built with
+# 🚨 SRE Assista Bot 🤖
+
+### IncidentIQ — Slack-Native SRE Assistant for Incident Triage, RAG & Alert Intelligence
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-blue?logo=python">
+  <img src="https://img.shields.io/badge/Slack-Bot-4A154B?logo=slack">
+  <img src="https://img.shields.io/badge/Google%20ADK-Agent_Dev_Kit-4285F4?logo=google">
+  <img src="https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi">
+  <img src="https://img.shields.io/badge/Postgres-Session_DB-336791?logo=postgresql">
+  <img src="https://img.shields.io/badge/RAG-Runbooks%20%26%20Incidents-6A5ACD">
+  <img src="https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=githubactions&logoColor=white">
+  <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
+</p>
+
+<img src="assets/SRE_Assista_Bot_Demo.gif" alt="SRE AssistaBot demo" width="900">
+
+</div>
+
+IncidentIQ is an SRE Assistant Chatbot, a Slack-style Site Reliability Engineering assistant built with
 Google's Agent Development Kit (ADK). It provides an SRE-oriented chat interface
 for incident triage, reliability reviews, AWS operations, AWS cost analysis, and
 Kubernetes operations.
@@ -10,7 +29,7 @@ complete local operations assistant with multiple model providers, a background
 service runner, ADK Web UI testing, health checks, and read-only infrastructure
 tooling.
 
-![SRE AssistaBot demo](assets/SRE_Assista_Bot_Demo.gif)
+---
 
 ## What This Project Does
 
@@ -964,6 +983,22 @@ Common issues:
 - Bedrock, Gemini, and Claude API calls may incur provider charges.
 - Review logs before sharing them; application logs may contain operational
   details.
+
+---
+
+## 👤 Author
+
+<p align="center">
+  <b>Mitra Boga</b><br>
+  <a href="https://www.linkedin.com/in/bogamitra/">
+    <img src="https://img.shields.io/badge/LinkedIn-bogamitra-blue?logo=linkedin">
+  </a>
+  <a href="https://x.com/techtraboga">
+    <img src="https://img.shields.io/badge/X-techtraboga-black?logo=x">
+  </a>
+</p>
+
+---
 
 ## License
 

@@ -28,6 +28,8 @@ Primary workflows:
 - Analyze AWS cost and usage patterns when AWS credentials are configured.
 - Inspect AWS infrastructure when AWS credentials are configured.
 - Inspect Kubernetes cluster state through read-only `kubectl` tools.
+- Search local runbooks and past incidents for citation-backed guidance.
+- Classify alerts for page, ticket, or dedupe routing.
 - Keep Slack thread context through ADK sessions.
 
 ## AI Concepts
@@ -57,35 +59,45 @@ Main AI Concepts Used:
    infrastructure checks, and read-only Kubernetes `kubectl` tools to gather
    operational evidence.
 
-5. **Natural Language Understanding**
+5. **Retrieval-Augmented Generation**
+   The full-model path can search a local runbook and past-incident knowledge
+   base before answering reliability, incident, and alerting questions. Retrieved
+   sources include citation IDs such as `[RB-001]` and confidence scores.
+
+6. **Natural Language Understanding**
    Users can ask questions in normal SRE language, such as "create an incident
    brief" or "review this system design," and the bot maps that request into
    structured SRE output.
 
-6. **Prompt Engineering**
+7. **Prompt Engineering**
    The project uses system prompts to shape the bot's behavior, tone, safety
    rules, response format, delegation rules, and SRE-specific reasoning style.
 
-7. **Retrieval of Live Operational Context**
+8. **Retrieval of Live Operational Context**
    When tools are enabled, the bot can retrieve live or configured
    infrastructure data from AWS or Kubernetes instead of only relying on static
    model knowledge.
 
-8. **Session Memory / Conversational Context**
+9. **Session Memory / Conversational Context**
    ADK sessions let the bot maintain conversation context across messages,
    especially inside Slack threads.
 
-9. **Reasoning and Decision Support**
+10. **Reasoning and Decision Support**
    The bot helps with incident triage, root-cause hypotheses, rollback
    criteria, risk assessment, SLO thinking, and reliability reviews.
 
-10. **Human-in-the-Loop Safety**
+11. **Human-in-the-Loop Safety**
     The prompts and tool design emphasize read-only checks first and ask for
     confirmation before risky or production-impacting actions.
 
+12. **Alert Classification And Deflection**
+    A deterministic alert-intelligence helper classifies alert severity,
+    recommends page/ticket/dedupe routing, matches known issues, and measures
+    pager-noise reduction in evals.
+
 In short: this project combines **LLMs, agentic AI, multi-agent delegation, tool
-use, prompt engineering, and conversational memory** to create an SRE-focused
-operational assistant.
+use, RAG, prompt engineering, alert classification, and conversational memory**
+to create an SRE-focused operational assistant.
 
 ## Current Status
 
@@ -98,6 +110,8 @@ Implemented and tested:
 - AWS Cost sub-agent.
 - AWS Core operations sub-agent.
 - Kubernetes operations sub-agent.
+- Local runbook and past-incident RAG tool with citations and confidence.
+- Alert escalation, known-issue matching, and pager-noise deflection helper.
 - Multiple model providers:
   - Ollama local demo mode.
   - Amazon Bedrock.
@@ -120,15 +134,44 @@ Validation at completion:
 Latest local result:
 
 ```text
-65 passed, 1 skipped
+77 passed, 1 skipped
 All checks passed
 ```
 
+## Scope And Mode Boundaries
+
+The original MVP scope remains intact:
+
+- Slack bot -> ADK API -> SRE agent flow still works.
+- ADK Web UI and API testing are still available.
+- AWS Cost, AWS Core, and Kubernetes sub-agents are still present.
+- Docker Compose support, health checks, environment files, and dev tooling are
+  still supported.
+
+The newer resume-metric additions are additive:
+
+- RAG over local runbooks and past incidents.
+- Citation and confidence scoring.
+- Alert severity classification, dedupe keys, known-issue matching, and
+  deflection scoring.
+- TTFT and benchmark probes.
+- Expanded eval sets for SRE response quality, RAG retrieval, and alert routing.
+
+Provider behavior matters:
+
+- **Ollama demo mode** keeps the bot stable by answering directly with the root
+  SRE prompt and avoiding sub-agent/tool delegation.
+- **Bedrock, Gemini, and Claude full-model modes** enable richer ADK behavior,
+  including sub-agent delegation and root-agent tools such as RAG and alert
+  classification.
+
 ## Evaluation And Benchmarking
 
-The project includes a lightweight SRE eval harness in `evals/`.
+The project includes lightweight eval and benchmark harnesses in `evals/`.
 
-It calls the running local ADK API and measures:
+### SRE Quality, Latency, And Hallucination Proxy
+
+This harness calls the running local ADK API and measures:
 
 - non-streaming `/run` response latency
 - p50 and p95 latency
@@ -137,6 +180,7 @@ It calls the running local ADK API and measures:
 - missing required SRE concepts per answer
 - unsupported live-claim rate, such as claiming logs or metrics were checked
   when no tool result was provided
+- hallucination proxy rate, currently equal to unsupported live-claim rate
 
 Run the full benchmark:
 
@@ -158,22 +202,18 @@ evals/results/
 
 Those generated result files are ignored by Git.
 
-Current limitation: this harness measures full non-streaming API response
-latency, not token-level TTFT. It also does not yet measure RAG metrics such as
-Hit@K, MRR, citation accuracy, or retrieval groundedness because this project
-does not currently include a runbook/past-incident retrieval corpus.
-
 Latest local smoke benchmark:
 
 ```text
 Cases: 3
 Successful API calls: 3
 Pass rate: 100.0%
-Average quality score: 0.926
-Average latency: 28.790s
-P50 latency: 23.837s
-P95 latency: 42.588s
+Average quality score: 0.885
+Average latency: 24.236s
+P50 latency: 24.745s
+P95 latency: 28.339s
 Unsupported live-claim rate: 0.0%
+Hallucination proxy rate: 0.0%
 ```
 
 This benchmark was run against the currently reachable local API. To benchmark a
@@ -183,6 +223,119 @@ specific provider, restart the bot with that provider first, then run the eval:
 .\start-assistabot.ps1 -Provider bedrock -Restart
 .\.venv\Scripts\python.exe -m evals.run_sre_eval --limit 3
 ```
+
+### TTFT Probe
+
+Token-level time-to-first-token is measured through ADK's streaming `/run_sse`
+endpoint:
+
+```powershell
+.\.venv\Scripts\python.exe -m evals.run_ttft_probe --api-url http://localhost:8001
+```
+
+Latest local TTFT probe:
+
+```text
+Status: success
+First streamed text / TTFT: 15.031s
+Total response time: 24.497s
+Events observed: 253
+```
+
+TTFT depends heavily on the active provider, model size, local machine, and
+whether Ollama/Bedrock/Gemini/Claude is being used.
+
+### RAG Retrieval, Citations, And Confidence
+
+The repository includes an expanded local knowledge base under
+`agents/sre_agent/knowledge_base/documents/` with 14 runbooks and 10
+past-incident notes. The root agent can use `search_knowledge_base` in full
+model mode to cite retrieved sources such as `[RB-001]` and `[PI-001]`.
+
+Run the RAG benchmark:
+
+```powershell
+.\.venv\Scripts\python.exe -m evals.run_rag_eval
+```
+
+Latest local RAG benchmark:
+
+```text
+Cases: 30
+Hit@1: 96.7%
+Hit@3: 100.0%
+Hit@5: 100.0%
+MRR: 0.983
+Citation precision@3: 0.544
+Citation precision@5: 0.333
+Average top relevant confidence: 0.986
+```
+
+These are real measurements over the included demo/anonymized corpus. They
+should not be presented as production RAG metrics until the corpus is replaced
+or augmented with actual sanitized team runbooks and incident records.
+
+### Alert Deflection And PagerNoise
+
+The alert eval calls the deterministic alert classification helper and measures
+page/ticket/dedupe routing quality.
+
+```powershell
+.\.venv\Scripts\python.exe -m evals.run_alert_eval
+```
+
+Latest local alert benchmark:
+
+```text
+Cases: 30
+Page decision accuracy: 100.0%
+Severity accuracy: 100.0%
+Known-issue hit rate: 100.0%
+Alert deflection rate: 60.0%
+False escalation rate: 0.0%
+Missed page rate: 0.0%
+PagerNoise reduction: 60.0%
+```
+
+This is a controlled benchmark over 30 representative alert scenarios, not a
+claim from live PagerDuty production traffic.
+
+### Current Resume-Metric Coverage
+
+Implemented and measured locally:
+
+- Slack-based SRE assistant.
+- Structured incident briefs and first-response plans.
+- RAG over local runbooks and past incidents.
+- Citations and confidence scores.
+- Eval harnesses for SRE quality, RAG, alert routing, and TTFT.
+- Hallucination proxy based on unsupported live-data claims.
+- Guardrails for read-only-first investigation and risky-action confirmation.
+- Severity classification, dedupe keys, known-issue detection, and alert
+  deflection metrics.
+
+Not claimed as production evidence yet:
+
+- Real production PagerDuty alert deflection.
+- Real production PagerNoise reduction.
+- Real team/user time saved per incident.
+- A 250-scenario benchmark.
+- Production RAG quality over actual company runbooks and incident records.
+
+### Expanding To Production-Grade Claims
+
+The repo now has the structure needed for larger resume claims, but the wording
+must match the evidence:
+
+- Current evidence: 30 RAG queries, 30 alert scenarios, 20 SRE quality prompts,
+  14 runbooks, and 10 past-incident notes.
+- To claim "250 incident scenarios", add at least 250 JSONL cases across
+  `sre_eval_scenarios.jsonl`, `rag_eval_queries.jsonl`, and
+  `alert_eval_scenarios.jsonl`, then run the evals and cite the measured output.
+- To claim production RAG quality, replace or augment the demo corpus with
+  sanitized real runbooks and real past incidents.
+- To claim real alert deflection or PagerNoise reduction, compare the classifier
+  against historical alert/page data, not only synthetic benchmark scenarios.
 
 ## Architecture
 
@@ -194,6 +347,10 @@ FastAPI ADK server: agents/sre_agent/serve.py
         |
         v
 Root SRE agent: agents/sre_agent/agent.py
+        |
+        +-- local knowledge-base tools
+        |   +-- runbook / past-incident retrieval with citations
+        |   +-- alert severity, known-issue, and deflection scoring
         |
         +-- aws_cost_agent
         |   +-- Cost Explorer tools
@@ -207,6 +364,29 @@ Root SRE agent: agents/sre_agent/agent.py
                 deployments, services, pod logs, and cluster summary
 ```
 
+### RAG And Alert Intelligence Internals
+
+The local knowledge base is stored as Markdown documents with lightweight
+metadata:
+
+```text
+agents/sre_agent/knowledge_base/documents/
+  RB-001...RB-014       Runbooks
+  PI-001...PI-010       Past incident notes
+```
+
+Root-agent tools:
+
+```text
+agents/sre_agent/tools/knowledge_base.py       Lexical retrieval, citations, confidence
+agents/sre_agent/tools/alert_intelligence.py   Severity, route, dedupe, known issue scoring
+```
+
+The retriever is deterministic and local. It does not call an external vector
+database. That keeps the project easy to run for a class/demo environment while
+still making RAG behavior measurable through Hit@K, MRR, citation precision, and
+confidence.
+
 Main directories:
 
 ```text
@@ -215,6 +395,8 @@ agents/sre_agent/
   serve.py                         FastAPI ADK API server with health checks
   settings.py                      Session DB configuration
   utils.py                         Model selection and shared helpers
+  tools/                           Root-agent RAG and alert-intelligence tools
+  knowledge_base/documents/        Local runbooks and past incidents
   aws_auth/                        Optional role-based AWS auth layer
   sub_agents/
     aws_cost/                      AWS cost analysis sub-agent
@@ -501,6 +683,23 @@ Technical triage:
 checklist for the on-call engineer. Include the exact metrics, logs, dashboards,
 database checks, dependency checks, and rollback validation steps we should run
 in the next 30 minutes. Prioritize read-only checks first.
+```
+
+Runbook-backed guidance:
+
+```text
+@sre-assista-bot Search our runbooks and past incidents for checkout 5xx and
+payment failures in NA. Cite the most relevant sources, include confidence, and
+turn them into a first 15-minute response plan.
+```
+
+Alert deflection:
+
+```text
+@sre-assista-bot Classify this alert for escalation: nightly checkout latency
+warning pages every night, resolves without action, no customer impact. Should
+it page, dedupe, or become a ticket? Include severity, confidence, and the known
+issue if one matches.
 ```
 
 Reliability review:

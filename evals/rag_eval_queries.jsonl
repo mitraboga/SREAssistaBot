@@ -1,0 +1,30 @@
+{"id":"rag_checkout_5xx","query":"checkout 5xx payment failures in North America with customer complaints","relevant_ids":["RB-001","PI-001"]}
+{"id":"rag_checkout_comms","query":"checkout outage incident brief customer communications rollback criteria first 15 minutes","relevant_ids":["RB-001","RB-012","PI-001"]}
+{"id":"rag_postgres_lock_waits","query":"checkout slowness postgres lock waits open transaction schema migration retry pressure","relevant_ids":["PI-003","RB-002"]}
+{"id":"rag_postgres_saturation","query":"Postgres connection pool saturation slow queries lock waits checkout latency","relevant_ids":["RB-002","PI-003"]}
+{"id":"rag_kubernetes_crashloop","query":"Kubernetes pods CrashLoopBackOff rollout unhealthy node pressure read-only checks","relevant_ids":["RB-003"]}
+{"id":"rag_kubernetes_rollout","query":"Kubernetes rollout readiness probe unavailable replicas deployment 5xx","relevant_ids":["RB-014","PI-004"]}
+{"id":"rag_kubernetes_hpa","query":"HPA autoscaling current metrics target utilization max replicas readiness events","relevant_ids":["RB-014"]}
+{"id":"rag_pager_noise","query":"nightly checkout latency alert pages every night resolves without action reduce pager noise","relevant_ids":["RB-004","PI-002"]}
+{"id":"rag_alert_dedupe","query":"dedupe known recurring checkout latency false pages scheduled batch job","relevant_ids":["RB-004","PI-002"]}
+{"id":"rag_slo_fast_burn","query":"API 5xx fast SLO burn error budget consumed page or ticket","relevant_ids":["RB-011","PI-010"]}
+{"id":"rag_burn_rate_alerts","query":"multi-window burn-rate alerts availability latency SLO error budget paging","relevant_ids":["RB-011","PI-010"]}
+{"id":"rag_aws_nat_cost","query":"AWS NAT Gateway data transfer cost spike linked account usage type owner tag","relevant_ids":["RB-005","PI-009"]}
+{"id":"rag_aws_cost_breakdown","query":"AWS cost spike month over month service account tag daily trend exclude support tax","relevant_ids":["RB-005"]}
+{"id":"rag_cloudwatch_cost","query":"CloudWatch log ingestion cost spike retention daily spend budget alert","relevant_ids":["RB-005"]}
+{"id":"rag_aws_core_alb","query":"AWS load balancer target health security group route table connectivity triage","relevant_ids":["RB-013"]}
+{"id":"rag_rds_infra","query":"RDS failover connection count storage saturation region account read-only checks","relevant_ids":["RB-013","RB-002"]}
+{"id":"rag_cdn_waf_403","query":"CDN WAF rule regional 403 edge errors origin healthy CloudFront","relevant_ids":["RB-007","PI-005"]}
+{"id":"rag_dns_tls_edge","query":"DNS Route53 TLS certificate CloudFront edge outage regional reachability","relevant_ids":["RB-007"]}
+{"id":"rag_auth_token_refresh","query":"login failures token refresh 401 OAuth identity provider sessions","relevant_ids":["RB-008","PI-006"]}
+{"id":"rag_auth_jwks","query":"OIDC JWKS cache redirect URI certificate rotation clock skew login failures","relevant_ids":["RB-008"]}
+{"id":"rag_queue_backlog","query":"queue backlog oldest message age dead-letter worker saturation delayed notifications","relevant_ids":["RB-009","PI-007"]}
+{"id":"rag_retry_storm","query":"worker retry storm poison messages consumer lag downstream provider slow","relevant_ids":["RB-009","PI-007"]}
+{"id":"rag_redis_connections","query":"Redis connection exhaustion cache timeout API latency Postgres fallback reads","relevant_ids":["RB-010","PI-008"]}
+{"id":"rag_cache_stampede","query":"cache hit rate drop hot keys Redis stampede jittered TTL database load","relevant_ids":["RB-010"]}
+{"id":"rag_deploy_rollback","query":"deploy rollback canary feature flag error rate latency incident window","relevant_ids":["RB-006"]}
+{"id":"rag_rollback_idempotency","query":"rollback criteria data compatibility idempotency checkout payment change","relevant_ids":["RB-006","RB-001"]}
+{"id":"rag_incident_handoff","query":"incident handoff timeline owners next update status page action items","relevant_ids":["RB-012"]}
+{"id":"rag_customer_comms","query":"customer communications initial update resolved update avoid root cause overcommit","relevant_ids":["RB-012"]}
+{"id":"rag_s3_access_denied","query":"AWS S3 access denied bucket policy IAM 403 account region checks","relevant_ids":["RB-013"]}
+{"id":"rag_api_fast_burn_rollback","query":"API 5xx fast burn error budget rollback customer update incident commander","relevant_ids":["PI-010","RB-011","RB-012"]}

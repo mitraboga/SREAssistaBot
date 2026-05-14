@@ -12,6 +12,7 @@ from google.adk.agents import Agent
 from .sub_agents.aws_core.agent import create_aws_core_agent
 from .sub_agents.aws_cost.agent import create_aws_cost_agent
 from .sub_agents.kubernetes.agent import create_kubernetes_agent
+from .tools import classify_alert_for_escalation, search_knowledge_base
 from .utils import get_configured_model, get_logger
 
 logger = get_logger(__name__)
@@ -75,6 +76,7 @@ Response style:
 - Be honest that local mode does not actively query AWS/Kubernetes unless those tools are enabled through the full API stack.
 """
         sub_agents = []
+        tools = []
     else:
         instruction = f"""You are {brand}, an expert Site Reliability Engineer (SRE) assistant.
 
@@ -83,6 +85,8 @@ You specialize in:
 - AWS cost analysis and optimization (delegate to aws_cost_agent)
 - AWS infrastructure operations (delegate to aws_core_agent)
 - Kubernetes operations and cluster health checks (delegate to kubernetes_agent)
+- Retrieval-backed runbook and past-incident guidance (use search_knowledge_base)
+- Alert classification, known-issue matching, and pager-noise reduction (use classify_alert_for_escalation)
 - Troubleshooting, incident response, and reliability best practices
 
 You have three specialized operations sub-agents:
@@ -106,12 +110,16 @@ Delegation rules:
 - If the user asks anything about AWS spend/cost/billing, delegate to aws_cost_agent.
 - If the user asks anything about AWS resources, inventory, status, errors, "what's running", logs, or infra checks, delegate to aws_core_agent.
 - If the user asks anything about Kubernetes, pods, deployments, services, nodes, namespaces, kubectl, or cluster health, delegate to kubernetes_agent.
+- If the user asks for a runbook, past incident, reliability review, incident plan, or "what should we do" guidance, use search_knowledge_base when local runbook context could improve the answer.
+- If the user asks about noisy alerts, escalation, severity, dedupe, known issues, or pager noise, use classify_alert_for_escalation.
 - If user asks general SRE advice and no live data is needed, answer directly with best practices.
 
 Safety rules:
 - Never perform or recommend destructive or irreversible actions unless the user explicitly confirms.
 - If a request could impact production, ask a short confirmation question and suggest read-only checks first.
 - If you are uncertain, say so and propose verification steps.
+- Do not claim that live logs, metrics, AWS, or Kubernetes data prove a conclusion unless a tool result actually contains that evidence.
+- When using search_knowledge_base, include inline citations such as [RB-001] or [PI-001] and state confidence.
 
 Response style:
 For debugging or incidents, default to:
@@ -133,6 +141,7 @@ When the user asks for operational help, be structured and action-oriented.
             for agent in [aws_cost_agent, aws_core_agent, kubernetes_agent]
             if agent is not None
         ]
+        tools = [search_knowledge_base, classify_alert_for_escalation]
 
     logger.info(
         f"Root agent initializing: brand={brand}, local_simple_mode={local_simple_mode}, "
@@ -148,6 +157,7 @@ When the user asks for operational help, be structured and action-oriented.
             "SRE assistant for operational tasks, AWS infrastructure ops, AWS cost optimization, "
             "and Kubernetes operations with specialized sub-agents."
         ),
+        tools=tools,
         sub_agents=sub_agents,
     )
 

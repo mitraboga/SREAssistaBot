@@ -60,3 +60,4 @@ def test_summarize_computes_rates_and_latency():
     assert summary["successful_api_calls"] == 2
     assert summary["pass_rate"] == 0.5
     assert summary["average_latency_seconds"] == 3.0
+    assert summary["hallucination_proxy_rate"] == summary["unsupported_live_claim_rate"]

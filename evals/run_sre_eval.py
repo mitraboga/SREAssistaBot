@@ -171,6 +171,8 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
         if result.get("score", {}).get("unsupported_live_claims")
     ]
 
+    unsupported_live_claim_rate = round(len(unsupported) / max(len(results), 1), 3)
+
     return {
         "case_count": len(results),
         "successful_api_calls": sum(1 for result in results if result.get("ok")),
@@ -180,7 +182,8 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
         "p50_latency_seconds": round(percentile(latencies, 0.50), 3),
         "p95_latency_seconds": round(percentile(latencies, 0.95), 3),
         "average_quality_score": round(statistics.mean(scores), 3) if scores else 0.0,
-        "unsupported_live_claim_rate": round(len(unsupported) / max(len(results), 1), 3),
+        "unsupported_live_claim_rate": unsupported_live_claim_rate,
+        "hallucination_proxy_rate": unsupported_live_claim_rate,
     }
 
 
@@ -196,6 +199,7 @@ def render_markdown(summary: dict[str, Any], results: list[dict[str, Any]]) -> s
         f"- P50 latency: {summary['p50_latency_seconds']:.3f}s",
         f"- P95 latency: {summary['p95_latency_seconds']:.3f}s",
         f"- Unsupported live-claim rate: {summary['unsupported_live_claim_rate']:.1%}",
+        f"- Hallucination proxy rate: {summary['hallucination_proxy_rate']:.1%}",
         "",
         "Note: latency is non-streaming `/run` response latency, not token-level TTFT.",
         "",

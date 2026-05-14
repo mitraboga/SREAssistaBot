@@ -36,7 +36,6 @@
   <img src="https://img.shields.io/badge/Kubernetes-Read--Only-326CE5?logo=kubernetes&logoColor=white">
   <img src="https://img.shields.io/badge/AWS-Operations-232F3E?logo=amazonaws&logoColor=white">
   <img src="https://img.shields.io/badge/Cost_Explorer-AWS-232F3E?logo=amazonaws&logoColor=white">
-  <img src="https://img.shields.io/badge/Socket_Mode-Slack-4A154B?logo=slack&logoColor=white">
 </p>
 
 <img src="assets/SRE_Assista_Bot_Demo.gif" alt="SRE AssistaBot demo" width="900">

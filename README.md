@@ -5,6 +5,7 @@
 ### IncidentIQ — Slack-Native SRE Assistant for Incident Triage, RAG & Alert Intelligence
 
 <p align="center">
+  <!-- Existing -->
   <img src="https://img.shields.io/badge/Python-3.11%2B-blue?logo=python">
   <img src="https://img.shields.io/badge/Slack-Bot-4A154B?logo=slack">
   <img src="https://img.shields.io/badge/Google%20ADK-Agent_Dev_Kit-4285F4?logo=google">
@@ -13,6 +14,29 @@
   <img src="https://img.shields.io/badge/RAG-Runbooks%20%26%20Incidents-6A5ACD">
   <img src="https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=githubactions&logoColor=white">
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
+
+  <!-- New: Concepts -->
+  <img src="https://img.shields.io/badge/LLM-Enabled-2ea44f">
+  <img src="https://img.shields.io/badge/Multi--Agent-Architecture-6f42c1">
+  <img src="https://img.shields.io/badge/Site_Reliability-Engineering-8A2BE2">
+  <img src="https://img.shields.io/badge/Incident-Response-ff6f00">
+  <img src="https://img.shields.io/badge/Observability-Enabled-0aa6a6">
+  <img src="https://img.shields.io/badge/Alert-Triage-ff4d4d">
+  <img src="https://img.shields.io/badge/PagerNoise-Reduction-7f8c8d">
+  <img src="https://img.shields.io/badge/TTFT-Measured-1f6feb">
+  <img src="https://img.shields.io/badge/Evaluation-Harness-9b59b6">
+
+  <!-- New: Providers -->
+  <img src="https://img.shields.io/badge/Ollama-Local_Model-111111">
+  <img src="https://img.shields.io/badge/Amazon_Bedrock-LLM-232F3E?logo=amazonaws&logoColor=white">
+  <img src="https://img.shields.io/badge/Gemini-Google_AI-4285F4?logo=google&logoColor=white">
+  <img src="https://img.shields.io/badge/Claude-Anthropic-000000">
+
+  <!-- New: Infra / Platforms -->
+  <img src="https://img.shields.io/badge/Kubernetes-Read--Only-326CE5?logo=kubernetes&logoColor=white">
+  <img src="https://img.shields.io/badge/AWS-Operations-232F3E?logo=amazonaws&logoColor=white">
+  <img src="https://img.shields.io/badge/Cost_Explorer-AWS-232F3E?logo=amazonaws&logoColor=white">
+  <img src="https://img.shields.io/badge/Socket_Mode-Slack-4A154B?logo=slack&logoColor=white">
 </p>
 
 <img src="assets/SRE_Assista_Bot_Demo.gif" alt="SRE AssistaBot demo" width="900">
@@ -684,8 +708,6 @@ Remove the login task:
 ```powershell
 .\uninstall-assistabot-login-task.ps1
 ```
-
-## Example Slack Prompts
 
 ## Example Slack Prompts
 

@@ -1,0 +1,23 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = [
+    ".venv",
+    "postgres_data",
+    "__pycache__",
+]
+
+[tool.ruff.lint]
+select = ["E", "F"]
+ignore = [
+    "E501",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+    "ignore::FutureWarning",
+]

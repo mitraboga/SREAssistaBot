@@ -1,0 +1,95 @@
+services:
+  sre-bot-web:
+    build:
+      context: .
+      dockerfile: agents/sre_agent/Dockerfile-agent.txt
+    image: sre-bot:latest
+    container_name: sre-bot
+    restart: unless-stopped
+    ports:
+      - "8000:8000"  # Expose the web interface
+    environment:
+      # Static configuration - unchanging values for local dev
+      - PYTHONPATH=/app
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=srebot
+      - DB_USER=postgres
+      - ADK_UI_ENABLED=true
+      - PORT=8000
+    env_file:
+      - agents/.env  # Secrets and user-specific configs
+    volumes:
+      - ${USERPROFILE}/.aws:/root/.aws:ro # Mount aws credentials to access AWS Bedrock
+      - ./agents:/app/  # Mount agents directory including sub_agents modular structure
+    command: ["adk", "web", "--session_service_uri=postgresql://postgres:postgres@postgres:5432/srebot","--host=0.0.0.0"]
+    depends_on:
+      - postgres
+
+  sre-bot-api:
+    build:
+      context: .
+      dockerfile: agents/sre_agent/Dockerfile-agent.txt
+    image: sre-bot:latest
+    container_name: sre-bot-api
+    restart: unless-stopped
+    ports:
+      - "8001:8000"  # Expose the API
+    environment:
+      # Static configuration - unchanging values for local dev
+      - PYTHONPATH=/app
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=srebot
+      - DB_USER=postgres
+      - ADK_UI_ENABLED=false
+      - PORT=8000
+    env_file:
+      - agents/.env  # Secrets and user-specific configs
+    volumes:
+      - ${USERPROFILE}/.aws:/root/.aws:ro # Mount aws credentials to access AWS Bedrock
+      - ./agents:/app/  # Mount agents directory including sub_agents modular structure
+    command: ["python", "/app/sre_agent/serve.py"]
+    depends_on:
+      - postgres
+
+  slack-bot:
+    build:
+      context: ./slack_bot
+      dockerfile: Dockerfile.txt
+    image: slack-bot:latest
+    container_name: slack-bot
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      # Static configuration - unchanging values for local dev
+      - PYTHONPATH=/app
+      - PYTHONDONTWRITEBYTECODE=1  # Prevents Python from writing .pyc files
+      - PYTHONUNBUFFERED=1  # Prevents Python from buffering stdout and stderr
+      - SRE_AGENT_API_URL=http://sre-bot-api:8000
+      - SLACK_SOCKET_MODE=true
+      - PORT=8002
+    env_file:
+      - slack_bot/.env  # Secrets and user-specific configs
+    volumes:
+      - ./slack_bot:/app:delegated  # Mount local code for development
+    command: ["uvicorn", "main:fast_api", "--host", "0.0.0.0", "--port", "8002", "--reload"]  # Enable auto-reload
+    depends_on:
+      - sre-bot-api
+
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      # Static configuration - unchanging values for local dev
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=srebot
+      - POSTGRES_PASSWORD=postgres  # Default password for local dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

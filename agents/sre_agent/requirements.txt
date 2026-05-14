@@ -1,0 +1,8 @@
+python-dateutil==2.9.0.post0
+google-adk==1.14.1
+# Required for proprietary models
+litellm==1.77.1
+# Required for Bedrock models
+boto3==1.40.35
+# Required for PostgreSQL database connection
+psycopg2-binary==2.9.9

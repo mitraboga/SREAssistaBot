@@ -1,0 +1,75 @@
+# Base stage with common dependencies
+FROM python:3.11-slim as base
+
+# Set working directory
+WORKDIR /app
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
+
+# Install system dependencies including build tools for Rust packages and PostgreSQL
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    build-essential \
+    gcc \
+    pkg-config \
+    libssl-dev \
+    libpq-dev \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust (needed for fastuuid and other Rust-based Python packages)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# --- Temporary Fix for GPG Errors ---
+# This section attempts to fix potential GPG key issues with apt.
+# It allows insecure updates temporarily to reinstall the keyring, then updates again.
+# Ideally, the base image or network environment should resolve this.
+RUN apt-get update --allow-insecure-repositories && \
+    apt-get install --reinstall debian-archive-keyring --allow-unauthenticated -y && \
+    apt-get update && \
+# --- Install AWS CLI ---
+    apt-get install -y --no-install-recommends awscli && \
+# --- Clean up ---
+    rm -rf /var/lib/apt/lists/*
+
+# Copy requirements files
+COPY ./agents/sre_agent/requirements.txt requirements.txt
+COPY requirements-dev.txt requirements-dev.txt
+
+# Upgrade pip and install Python dependencies (prefer binary wheels)
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir --prefer-binary -r requirements.txt
+
+# Copy project files - ensure all sub_agents are included
+COPY . .
+
+# Verify the sub_agents structure is properly copied
+RUN ls -la /app/agents/sre_agent/sub_agents/ || echo "sub_agents directory not found"
+
+# Test stage
+FROM base as test
+
+# Install test dependencies
+RUN pip install --no-cache-dir -r requirements-dev.txt && \
+    pip install pytest pytest-asyncio
+
+# Production stage (default)
+FROM base as production
+
+# Verify the sub_agents structure is properly copied
+RUN ls -la /app/agents/sre_agent/sub_agents/ || echo "sub_agents directory not found"
+
+# # Create a non-root user to run the application
+# RUN groupadd -r sre && useradd -r -g sre sre
+# RUN chown -R sre:sre /app
+# USER sre
+
+# Set the entrypoint
+
+
+# Set default command (can be overridden)
+CMD ["adk", "web"]

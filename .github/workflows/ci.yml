@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  lint-and-format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install development dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+
+    - name: Run ruff linting
+      run: ruff check .
+
+    - name: Run ruff formatting check
+      run: ruff format --check .
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python for local testing
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies for unit tests
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-asyncio
+        # Install just the core dependencies needed for unit tests
+        pip install pydantic boto3 python-dateutil
+
+    - name: Run unit tests (mocked, no AWS/DB)
+      run: |
+        # Run only unit tests that don't require real AWS or DB connections
+        PYTHONPATH=$PWD pytest tests/ -v -k "not integration" --tb=short --maxfail=3
+      continue-on-error: true
+
+    - name: Run full test suite with Docker Compose
+      run: |
+        # Use dedicated CI docker-compose configuration
+        docker compose -f docker-compose.ci.yml up --build --abort-on-container-exit --exit-code-from sre-bot-test
+
+    - name: Show test logs on failure
+      if: failure()
+      run: |
+        echo "=== Test execution failed. Checking container logs ==="
+        docker compose -f docker-compose.ci.yml logs postgres || echo "No postgres logs available"
+        docker compose -f docker-compose.ci.yml logs sre-bot-test || echo "No test logs available"
+
+    - name: Clean up test environment
+      if: always()
+      run: docker compose -f docker-compose.ci.yml down -v

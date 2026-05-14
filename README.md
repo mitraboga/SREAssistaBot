@@ -30,6 +30,63 @@ Primary workflows:
 - Inspect Kubernetes cluster state through read-only `kubectl` tools.
 - Keep Slack thread context through ADK sessions.
 
+## AI Concepts
+
+This project uses several AI concepts, not just a basic chatbot wrapper.
+
+Main AI Concepts Used:
+
+1. **Large Language Models**
+   The bot uses LLMs to understand natural-language SRE questions and generate
+   structured operational responses. Supported providers include Ollama, Amazon
+   Bedrock, Google Gemini, and Anthropic Claude.
+
+2. **Agentic AI**
+   The system is built with Google ADK, so the bot is modeled as an agent that
+   can reason about a user request, decide whether to answer directly, or
+   delegate to a specialized sub-agent.
+
+3. **Multi-Agent Architecture**
+   The root SRE agent can delegate to specialized agents:
+   - AWS Cost agent
+   - AWS Core operations agent
+   - Kubernetes operations agent
+
+4. **Tool Use / Function Calling**
+   The agents can use tools such as AWS Cost Explorer helpers, AWS
+   infrastructure checks, and read-only Kubernetes `kubectl` tools to gather
+   operational evidence.
+
+5. **Natural Language Understanding**
+   Users can ask questions in normal SRE language, such as "create an incident
+   brief" or "review this system design," and the bot maps that request into
+   structured SRE output.
+
+6. **Prompt Engineering**
+   The project uses system prompts to shape the bot's behavior, tone, safety
+   rules, response format, delegation rules, and SRE-specific reasoning style.
+
+7. **Retrieval of Live Operational Context**
+   When tools are enabled, the bot can retrieve live or configured
+   infrastructure data from AWS or Kubernetes instead of only relying on static
+   model knowledge.
+
+8. **Session Memory / Conversational Context**
+   ADK sessions let the bot maintain conversation context across messages,
+   especially inside Slack threads.
+
+9. **Reasoning and Decision Support**
+   The bot helps with incident triage, root-cause hypotheses, rollback
+   criteria, risk assessment, SLO thinking, and reliability reviews.
+
+10. **Human-in-the-Loop Safety**
+    The prompts and tool design emphasize read-only checks first and ask for
+    confirmation before risky or production-impacting actions.
+
+In short: this project combines **LLMs, agentic AI, multi-agent delegation, tool
+use, prompt engineering, and conversational memory** to create an SRE-focused
+operational assistant.
+
 ## Current Status
 
 Implemented and tested:

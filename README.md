@@ -222,6 +222,17 @@ If `MODEL_PROVIDER` is not forced, the code checks providers in this order:
 The local scripts are preferred because they make the selected provider
 explicit and avoid confusion when multiple keys exist in `agents/.env`.
 
+### Model Selection Guide
+
+| Scenario | Recommended Provider | Suggested Model | Why |
+| --- | --- | --- | --- |
+| Free local demo, no cloud spend | Ollama | `qwen2.5:1.5b` | Runs locally and is enough to prove Slack integration, background services, and basic SRE response behavior. |
+| Best low-cost AWS smoke test | Amazon Bedrock | `amazon.nova-micro-v1:0` | Confirms Bedrock auth, billing, and ADK provider wiring without starting with a larger model. |
+| AWS-native project demo | Amazon Bedrock | Nova or Claude model available in Bedrock | Keeps the model path inside AWS and enables full sub-agent delegation for a stronger demo. |
+| Fast general SRE assistance | Google Gemini | `gemini-2.0-flash` | Good default for quick operational guidance and lower-latency interactions. |
+| Strong incident/reliability reasoning | Anthropic Claude | `claude-3-5-sonnet-20240620` or newer available model | Best fit for detailed incident command, tradeoff analysis, and design reviews. |
+| Full production-style behavior | Bedrock, Gemini, or Claude | Stronger hosted model | Hosted models handle ADK delegation more reliably than the small local Ollama demo model. |
+
 ## Recommended Local Setup
 
 ### 1. Create a virtual environment

@@ -22,6 +22,7 @@ secrets.yaml
 # Runtime logs and local process state
 *.log
 .runtime/
+evals/results/
 
 # Local databases and generated state
 *.db

@@ -120,8 +120,68 @@ Validation at completion:
 Latest local result:
 
 ```text
-61 passed, 1 skipped
+65 passed, 1 skipped
 All checks passed
+```
+
+## Evaluation And Benchmarking
+
+The project includes a lightweight SRE eval harness in `evals/`.
+
+It calls the running local ADK API and measures:
+
+- non-streaming `/run` response latency
+- p50 and p95 latency
+- deterministic SRE quality score
+- pass rate across canned SRE scenarios
+- missing required SRE concepts per answer
+- unsupported live-claim rate, such as claiming logs or metrics were checked
+  when no tool result was provided
+
+Run the full benchmark:
+
+```powershell
+.\.venv\Scripts\python.exe -m evals.run_sre_eval --api-url http://localhost:8001
+```
+
+Run a smaller smoke benchmark:
+
+```powershell
+.\.venv\Scripts\python.exe -m evals.run_sre_eval --limit 3
+```
+
+Results are written to:
+
+```text
+evals/results/
+```
+
+Those generated result files are ignored by Git.
+
+Current limitation: this harness measures full non-streaming API response
+latency, not token-level TTFT. It also does not yet measure RAG metrics such as
+Hit@K, MRR, citation accuracy, or retrieval groundedness because this project
+does not currently include a runbook/past-incident retrieval corpus.
+
+Latest local smoke benchmark:
+
+```text
+Cases: 3
+Successful API calls: 3
+Pass rate: 100.0%
+Average quality score: 0.926
+Average latency: 28.790s
+P50 latency: 23.837s
+P95 latency: 42.588s
+Unsupported live-claim rate: 0.0%
+```
+
+This benchmark was run against the currently reachable local API. To benchmark a
+specific provider, restart the bot with that provider first, then run the eval:
+
+```powershell
+.\start-assistabot.ps1 -Provider bedrock -Restart
+.\.venv\Scripts\python.exe -m evals.run_sre_eval --limit 3
 ```
 
 ## Architecture

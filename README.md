@@ -687,63 +687,107 @@ Remove the login task:
 
 ## Example Slack Prompts
 
-Incident command:
+## Example Slack Prompts
 
-```text
-@sre-assista-bot Act as the incident commander. We have a 5xx spike on checkout,
-payment failures, and customer complaints from NA. Give me an incident brief,
-first 15-minute plan, risks, rollback criteria, and customer comms draft.
-```
+<img src="assets/IncidentIQ.png" alt="IncidentIQ — Slack prompt examples" width="900">
 
-Technical triage:
+<details>
+  <summary><b>i) Incident Response</b></summary>
+  <br/>
+  <ol>
+    <li>
+      <img src="assets/IncidentResponse1.png" alt="Incident Response 1" width="900">
+    </li>
+    <li>
+      <img src="assets/IncidentResponse2.png" alt="Incident Response 2" width="900">
+    </li>
+    <li>
+      <img src="assets/IncidentResponse3.png" alt="Incident Response 3" width="900">
+    </li>
+    <li>
+      <img src="assets/IncidentResponse4.png" alt="Incident Response 4" width="900">
+    </li>
+  </ol>
+</details>
 
-```text
-@sre-assista-bot Based on that incident brief, create a technical triage
-checklist for the on-call engineer. Include the exact metrics, logs, dashboards,
-database checks, dependency checks, and rollback validation steps we should run
-in the next 30 minutes. Prioritize read-only checks first.
-```
+<details>
+  <summary><b>ii) Debugging / Triage</b></summary>
+  <br/>
+  <ol>
+    <li>
+      <img src="assets/DebuggingTriage1.png" alt="Debugging / Triage 1" width="900">
+    </li>
+    <li>
+      <img src="assets/DebuggingTriage2.png" alt="Debugging / Triage 2" width="900">
+    </li>
+    <li>
+      <img src="assets/DebuggingTriage3.png" alt="Debugging / Triage 3" width="900">
+    </li>
+    <li>
+      <img src="assets/DebuggingTriage4.png" alt="Debugging / Triage 4" width="900">
+    </li>
+  </ol>
+</details>
 
-Runbook-backed guidance:
+<details>
+  <summary><b>iii) Reliability Engineering</b></summary>
+  <br/>
+  <ol>
+    <li>
+      <img src="assets/ReliabilityEngineering1.png" alt="Reliability Engineering 1" width="900">
+    </li>
+    <li>
+      <img src="assets/ReliabilityEngineering1.5.png" alt="Reliability Engineering 1.5" width="900">
+    </li>
+    <li>
+      <img src="assets/ReliabilityEngineering2.png" alt="Reliability Engineering 2" width="900">
+    </li>
+    <li>
+      <img src="assets/ReliabilityEngineering3.png" alt="Reliability Engineering 3" width="900">
+    </li>
+    <li>
+      <img src="assets/ReliabilityEngineering4.png" alt="Reliability Engineering 4" width="900">
+    </li>
+  </ol>
+</details>
 
-```text
-@sre-assista-bot Search our runbooks and past incidents for checkout 5xx and
-payment failures in NA. Cite the most relevant sources, include confidence, and
-turn them into a first 15-minute response plan.
-```
+<details>
+  <summary><b>iv) AWS Cost / Style</b></summary>
+  <br/>
+  <ol>
+    <li>
+      <img src="assets/AWSCostStyle1.png" alt="AWS Cost / Style 1" width="900">
+    </li>
+    <li>
+      <img src="assets/AWSCostStyle2.png" alt="AWS Cost / Style 2" width="900">
+    </li>
+    <li>
+      <img src="assets/AWSCostStyle3.png" alt="AWS Cost / Style 3" width="900">
+    </li>
+  </ol>
+</details>
 
-Alert deflection:
-
-```text
-@sre-assista-bot Classify this alert for escalation: nightly checkout latency
-warning pages every night, resolves without action, no customer impact. Should
-it page, dedupe, or become a ticket? Include severity, confidence, and the known
-issue if one matches.
-```
-
-Reliability review:
-
-```text
-@sre-assista-bot Review this production checkout design from an SRE perspective:
-frontend -> API gateway -> payments service -> Postgres. Target availability is
-99.9%, peak traffic is 500 requests/minute, and the main concerns are payment
-failures, duplicate charges, DB saturation, and slow checkout. Give me risks,
-SLIs/SLOs, alerts, observability gaps, and highest-priority improvements.
-```
-
-Kubernetes operations:
-
-```text
-@sre-assista-bot How many pods are running in the default namespace, and are any
-pods crash looping?
-```
-
-AWS cost analysis:
-
-```text
-@sre-assista-bot Show me the top AWS cost drivers this month and compare them
-against last month. Exclude Support and Tax.
-```
+<details>
+  <summary><b>v) Real World Implementation</b></summary>
+  <br/>
+  <ol>
+    <li>
+      <img src="assets/RealWorldApplication1.png" alt="Real World Application 1" width="900">
+    </li>
+    <li>
+      <img src="assets/RealWorldApplication1.5.png" alt="Real World Application 1.5" width="900">
+    </li>
+    <li>
+      <img src="assets/RealWorldApplication2.png" alt="Real World Application 2" width="900">
+    </li>
+    <li>
+      <img src="assets/RealWorldApplication2.33.png" alt="Real World Application 2.33" width="900">
+    </li>
+    <li>
+      <img src="assets/RealWorldApplication2.66.png" alt="Real World Application 2.66" width="900">
+    </li>
+  </ol>
+</details>
 
 ## API Usage
 

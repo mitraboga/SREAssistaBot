@@ -38,7 +38,7 @@
   <img src="https://img.shields.io/badge/Cost_Explorer-AWS-232F3E?logo=amazonaws&logoColor=white">
 </p>
 
-<video src="assets/SRE_Assista_Bot_Demo.mp4" width="900" controls autoplay loop muted playsinline></video>
+<img src="assets/SRE_IncidentIQ_Demo.gif" alt="SRE AssistaBot demo" width="900">
 
 </div>
 

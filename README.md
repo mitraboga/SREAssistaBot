@@ -710,7 +710,7 @@ Remove the login task:
 
 ## Example Slack Prompts
 
-<img src="assets/IncidentIQ.png" alt="IncidentIQ — Slack prompt examples" width="900">
+<img src="assets/IncidentIQ.jpeg" alt="IncidentIQ — Slack prompt examples" width="900">
 
 <details>
   <summary><b>i) Incident Response</b></summary>

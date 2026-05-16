@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚨 SRE Assista Bot 🤖
+# 🚨 SRE-Assist-Bot 🤖
 
 ### IncidentIQ — Slack-Native SRE Assistant for Incident Triage, RAG & Alert Intelligence
 

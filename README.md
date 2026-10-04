@@ -71,19 +71,61 @@ The `frontend/` React + TypeScript app adds four connected workflows:
 - **Alert triage:** call the existing Python severity/routing classifier and
   review known-issue evidence before taking action.
 
-Run the credential-free, labeled offline demo:
+#### Try the React demo
+
+Install **Git and Node.js 24** first. The default **Demo** environment needs no
+Python backend, model, Slack, AWS, Kubernetes, database, or API keys.
+
+The commands below explicitly download the React branch, so visitors can try it
+before [PR #1](https://github.com/mitraboga/SREAssistaBot/pull/1) is merged into
+`main`. After the merge, a normal clone of `main` will also include `frontend/`.
+
+**Windows PowerShell:** open a terminal in the folder where you want to download
+the project, then run these commands one at a time:
+
+```powershell
+git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+cd .\SREAssistaBot-React\frontend
+npm.cmd ci
+npm.cmd run dev
+```
+
+**macOS/Linux:** open a terminal in the folder where you want to download the
+project, then run:
 
 ```bash
-cd frontend
+git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+cd SREAssistaBot-React/frontend
 npm ci
 npm run dev
 ```
 
-Open <http://localhost:5173>. Start the existing API on port 8001 and switch to
-**Live API** to use the backend agent and tools. Incident coordination is saved
-in this browser; live chat uses ADK sessions. Demo/live data are stored separately.
-See [frontend/README.md](frontend/README.md) for architecture, API contracts,
-Docker setup, tests, and current scope.
+Wait for each command to finish; if one fails, resolve that error before moving
+on. Open the exact URL printed beside **Local:**, normally
+<http://localhost:5173>. Keep the terminal open while using the app; **Ctrl+C**
+stops the server. If port 5173 is occupied, Vite may print a different port.
+
+To start it again later, open a terminal in the downloaded project's `frontend/`
+folder and run `npm.cmd run dev` on Windows or `npm run dev` on macOS/Linux.
+You only need to install dependencies again after dependency changes.
+
+Try creating an incident, assigning an owner, checking response actions, adding
+timeline notes, and exporting a handoff. Then try the demo assistant's citations,
+knowledge search, and sample alerts. Demo assistant replies are canned; demo
+search and classification are simplified browser examples. Incident coordination
+is saved in this browser; demo/live data are stored separately.
+
+**Live AI:** start the configured Python API on port 8001, then switch to
+**Live API**. Live chat uses ADK sessions and requires a working model provider.
+See [frontend/README.md](frontend/README.md#connect-to-the-backend) for backend
+commands and [the local setup below](#recommended-local-setup) for provider setup.
+
+**Sharing:** `localhost` points to each visitor's own computer. These instructions
+let others run their own copy; there is no public React demo URL included in this
+change. A public demo requires deploying the frontend to a web host. Hosting only
+the frontend provides Demo mode; live AI also needs a deployed, configured API.
+See [frontend/README.md](frontend/README.md) for hosting considerations,
+architecture, API contracts, Docker setup, tests, and current scope.
 
 ![React IncidentIQ workspace](assets/ReactWorkspace.png)
 

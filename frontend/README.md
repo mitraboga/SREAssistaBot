@@ -6,16 +6,53 @@ FastAPI / Google ADK backend. Slack and the ADK developer UI remain available.
 
 ## Run the offline demo
 
-Use Node.js 24 LTS. From the repository root:
+Install Git and Node.js 24. To download the React workspace before
+[PR #1](https://github.com/mitraboga/SREAssistaBot/pull/1) is merged into `main`,
+open a terminal in the folder where you want to download the project.
+
+**Windows PowerShell:** run each command one at a time:
+
+```powershell
+git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+cd .\SREAssistaBot-React\frontend
+npm.cmd ci
+npm.cmd run dev
+```
+
+**macOS/Linux:**
 
 ```bash
-cd frontend
+git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+cd SREAssistaBot-React/frontend
 npm ci
 npm run dev
 ```
 
-Open <http://localhost:5173>. The default **Demo** environment works without a
-model, Slack, AWS, Kubernetes, or database credentials.
+Already have a local Git checkout? From that repository's root, run
+`git fetch origin`, `git switch feat/react-incident-workspace`, and `cd frontend`,
+then install/start with the npm commands for your operating system above.
+After the PR is merged, a normal clone of `main` also includes the frontend.
+
+Open the exact URL printed beside **Local:**, normally <http://localhost:5173>.
+Vite may choose another port if 5173 is occupied. Keep the terminal open while
+using the app. The default **Demo** environment works without a Python backend,
+model, Slack, AWS, Kubernetes, database credentials, or API keys.
+
+**Restart later:** open a terminal in the downloaded project's `frontend/` folder
+and run `npm.cmd run dev` on Windows or `npm run dev` on macOS/Linux. Stop the
+server with **Ctrl+C**. Reinstall dependencies with `npm.cmd ci` / `npm ci` when
+the dependency files change.
+
+**Troubleshooting:**
+
+- `not a git repository` or `Cannot find path ... frontend`: open the downloaded
+  project folder first, or use the complete clone commands above.
+- `ERR_CONNECTION_REFUSED`: check that the Vite terminal is still running and
+  use its printed URL. Resolve any terminal startup error before opening Chrome.
+- PowerShell blocks `npm.ps1`: use the documented `npm.cmd` commands.
+- `node` or `npm` is not recognized: install Node.js 24 and reopen your terminal.
+
+If a command fails, stop there and resolve its error before running the next one.
 
 - Incident board: create incidents, assign owners, change status, check off
   response actions, add timeline notes, filter the queue, and export a Markdown handoff.
@@ -26,6 +63,23 @@ model, Slack, AWS, Kubernetes, or database credentials.
 Demo responses and scores are labeled. They are not live operational results, LLM
 responses, or measured production outcomes. The demo classifier and browser search
 are simplified examples; Live API uses the original Python tools.
+
+## Let others try it
+
+Visitors can run their own copy with the commands above. `localhost` refers to
+the computer opening the URL, so sharing your local URL does not share your app.
+
+A public demo requires deploying the frontend to a web host. No public React demo
+deployment is included in this change. To create the production files, run
+`npm run build` (`npm.cmd run build` in PowerShell) from `frontend/`; the output is
+`frontend/dist/`. Configure the host to serve `index.html` for React route URLs
+such as `/incidents` and `/knowledge`, since the app uses `BrowserRouter`.
+
+Hosting only this frontend provides the labeled Demo experience. Live AI also
+requires a deployed Python API, a working model provider, and the appropriate API
+address/proxy configuration. Vite's development proxy is not included in `dist/`;
+the provided nginx configuration demonstrates a production proxy. Read the
+[state and scope](#state-and-scope) notes before sharing a live multi-user API.
 
 ## Connect to the backend
 

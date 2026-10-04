@@ -1,4 +1,13 @@
 services:
+  incidentiq-ui:
+    build:
+      context: ./frontend
+    profiles: ["react"]
+    ports:
+      - "5173:80"
+    depends_on:
+      - sre-bot-api
+
   sre-bot-web:
     build:
       context: .

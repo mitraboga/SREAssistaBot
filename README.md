@@ -2,11 +2,13 @@
 
 # 🚨 SRE-Assist-Bot 🤖
 
-### IncidentIQ — Slack-Native SRE Assistant for Incident Triage, RAG & Alert Intelligence
+### IncidentIQ — React & Slack SRE Workspace for Incident Triage, RAG & Alert Intelligence
 
 <p align="center">
   <!-- Existing -->
   <img src="https://img.shields.io/badge/Python-3.11%2B-blue?logo=python">
+  <img src="https://img.shields.io/badge/React-Workspace-61DAFB?logo=react&logoColor=black">
+  <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript&logoColor=white">
   <img src="https://img.shields.io/badge/Slack-Bot-4A154B?logo=slack">
   <img src="https://img.shields.io/badge/Google%20ADK-Agent_Dev_Kit-4285F4?logo=google">
   <img src="https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi">
@@ -55,6 +57,51 @@ tooling.
 ---
 
 ## What This Project Does
+
+### React Operations Workspace
+
+The `frontend/` React + TypeScript app adds four connected workflows:
+
+- **Incident board:** create/filter incidents, assign owners, update status,
+  track actions and timeline notes, and export a Markdown handoff.
+- **SRE assistant:** send messages to the existing ADK agent with incident context,
+  citation links, retry/cancel controls, and ADK history synchronization.
+- **Knowledge base:** browse/search the existing runbooks and past incidents,
+  read source documents, and inspect relative retrieval scores.
+- **Alert triage:** call the existing Python severity/routing classifier and
+  review known-issue evidence before taking action.
+
+Run the credential-free, labeled offline demo:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Open <http://localhost:5173>. Start the existing API on port 8001 and switch to
+**Live API** to use the backend agent and tools. Incident coordination is saved
+in this browser; live chat uses ADK sessions. Demo/live data are stored separately.
+See [frontend/README.md](frontend/README.md) for architecture, API contracts,
+Docker setup, tests, and current scope.
+
+![React IncidentIQ workspace](assets/ReactWorkspace.png)
+
+<details>
+<summary>React assistant, knowledge explorer, alert triage, and mobile screenshots</summary>
+
+![React assistant](assets/ReactAssistant.png)
+![React knowledge explorer](assets/ReactKnowledge.png)
+![React alert triage](assets/ReactTriage.png)
+<img src="assets/ReactMobile.png" alt="React incident board on mobile" width="390">
+
+</details>
+
+The React app adds strict TypeScript, client-side routing, accessible forms,
+responsive layouts, REST integration, Vitest/React Testing Library tests,
+Playwright desktop/mobile workflow tests, and a dedicated CI workflow.
+
+### Existing Agent Workflows
 
 SRE AssistaBot lets an engineer ask operational questions in Slack threads or
 through the ADK Web UI. The root SRE agent can answer general reliability
@@ -382,7 +429,7 @@ must match the evidence:
 ## Architecture
 
 ```text
-Slack / ADK Web UI / API clients
+React workspace / Slack / ADK Web UI / API clients
         |
         v
 FastAPI ADK server: agents/sre_agent/serve.py

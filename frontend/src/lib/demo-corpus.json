@@ -1,0 +1,361 @@
+[
+  {
+    "source_id": "PI-001",
+    "title": "Past Incident - NA Checkout 5xx From Payment Provider Timeouts",
+    "type": "past_incident",
+    "tags": [
+      "checkout",
+      "payments",
+      "na",
+      "provider-timeout",
+      "5xx",
+      "rollback"
+    ],
+    "body": "# Past Incident - NA Checkout 5xx From Payment Provider Timeouts\n\nDuring a previous North America checkout incident, API gateway 5xx errors rose\nwith payment authorization timeouts. Customer complaints were concentrated in NA.\n\n## What Helped\n\n- Comparing gateway 5xx by region isolated impact to NA.\n- Payment timeout errors increased before Postgres saturation symptoms.\n- A temporary feature flag reduced calls to the affected provider path.\n- Customer communications avoided naming a root cause until provider evidence\n  was confirmed.\n\n## Follow-Up Actions\n\n- Add payment provider timeout dashboards.\n- Keep idempotency checks in the rollback validation checklist.\n- Include support macros for failed payment and duplicate-charge reports."
+  },
+  {
+    "source_id": "PI-002",
+    "title": "Past Incident - Nightly Checkout Latency False Pages",
+    "type": "past_incident",
+    "tags": [
+      "checkout",
+      "latency",
+      "pager-noise",
+      "false-escalation",
+      "scheduled-job"
+    ],
+    "body": "# Past Incident - Nightly Checkout Latency False Pages\n\nA nightly checkout latency alert paged the on-call team for several days, then\nresolved without action. The alert fired during a scheduled batch job and did not\ncorrelate with customer-visible errors or SLO burn.\n\n## What Helped\n\n- The alert was converted from a page to a ticket unless SLO burn or 5xx errors\n  appeared at the same time.\n- Dedupe grouped repeated alerts by service, region, and scheduled-job window.\n- The runbook was updated with the known batch-job window and escalation\n  criteria.\n\n## Follow-Up Actions\n\n- Track false escalation count weekly.\n- Review alert thresholds after seasonal traffic changes.\n- Keep customer-impact checks in the alert description."
+  },
+  {
+    "source_id": "PI-003",
+    "title": "Past Incident - Checkout Slowness From Postgres Lock Waits",
+    "type": "past_incident",
+    "tags": [
+      "checkout",
+      "postgres",
+      "lock-wait",
+      "slow-query",
+      "database",
+      "latency"
+    ],
+    "body": "# Past Incident - Checkout Slowness From Postgres Lock Waits\n\nCheckout latency increased after a schema migration left a transaction open.\nApplication retries amplified connection pool pressure.\n\n## What Helped\n\n- Lock wait and transaction age dashboards identified the blocked table.\n- Read-only query samples showed checkout requests waiting on the same lock.\n- Rollback was avoided after the migration was completed safely.\n\n## Follow-Up Actions\n\n- Add migration lock-time alerts.\n- Require migration dry runs for checkout tables.\n- Add retry budgets so database saturation is not amplified."
+  },
+  {
+    "source_id": "PI-004",
+    "title": "Past Incident - Bad Kubernetes Rollout From Readiness Probe Failure",
+    "type": "past_incident",
+    "tags": [
+      "kubernetes",
+      "rollout",
+      "readiness",
+      "deployment",
+      "pods",
+      "5xx"
+    ],
+    "body": "# Past Incident - Bad Kubernetes Rollout From Readiness Probe Failure\n\nA checkout deployment rolled out with a readiness probe path that returned 500\nfor the new version. The service had reduced capacity and intermittent 5xx\nresponses.\n\n## What Helped\n\n- Rollout status showed unavailable replicas during the incident window.\n- Pod events showed repeated readiness probe failures.\n- Rolling back the deployment restored available replicas.\n\n## Follow-Up Actions\n\n- Add readiness probe checks to pre-deploy validation.\n- Alert on unavailable replicas during canary rollout.\n- Include deployment version in incident dashboards."
+  },
+  {
+    "source_id": "PI-005",
+    "title": "Past Incident - CDN WAF Rule Caused Regional 403 Errors",
+    "type": "past_incident",
+    "tags": [
+      "cdn",
+      "waf",
+      "cloudfront",
+      "403",
+      "edge",
+      "regional"
+    ],
+    "body": "# Past Incident - CDN WAF Rule Caused Regional 403 Errors\n\nA WAF rule change blocked valid checkout traffic from one region and produced a\nspike in CDN 403 responses while origin health remained normal.\n\n## What Helped\n\n- CDN logs showed 403s at the edge, not origin 5xx responses.\n- WAF sampled requests matched the new managed rule.\n- Reverting the WAF rule resolved the regional impact.\n\n## Follow-Up Actions\n\n- Add regional CDN 4xx dashboards.\n- Require sampled request review before WAF rule rollout.\n- Add an owner to edge configuration changes."
+  },
+  {
+    "source_id": "PI-006",
+    "title": "Past Incident - Login Failures From Token Refresh Errors",
+    "type": "past_incident",
+    "tags": [
+      "auth",
+      "login",
+      "token",
+      "refresh",
+      "oauth",
+      "401",
+      "identity-provider"
+    ],
+    "body": "# Past Incident - Login Failures From Token Refresh Errors\n\nUsers were logged out repeatedly after a token refresh configuration change.\n401 responses increased, but core API availability stayed healthy.\n\n## What Helped\n\n- Separating login success rate from API availability kept triage focused.\n- OAuth callback latency was normal, but token refresh errors spiked.\n- Reverting the refresh-token audience setting restored sessions.\n\n## Follow-Up Actions\n\n- Add token refresh error alerts.\n- Include auth config diffs in release notes.\n- Add synthetic login checks for each identity provider."
+  },
+  {
+    "source_id": "PI-007",
+    "title": "Past Incident - Notification Queue Backlog From Worker Saturation",
+    "type": "past_incident",
+    "tags": [
+      "queue",
+      "backlog",
+      "workers",
+      "sqs",
+      "retries",
+      "dead-letter",
+      "notifications"
+    ],
+    "body": "# Past Incident - Notification Queue Backlog From Worker Saturation\n\nNotification delivery was delayed after a downstream provider slowed down.\nWorkers retried aggressively and oldest message age increased.\n\n## What Helped\n\n- Oldest message age showed user-visible delay more clearly than queue depth.\n- Dead-letter volume identified poison messages.\n- Rate-limiting producers stopped retries from overwhelming the provider.\n\n## Follow-Up Actions\n\n- Add retry budget and jitter.\n- Alert on oldest message age.\n- Add dead-letter owner and replay procedure."
+  },
+  {
+    "source_id": "PI-008",
+    "title": "Past Incident - Redis Connection Exhaustion Caused API Latency",
+    "type": "past_incident",
+    "tags": [
+      "redis",
+      "cache",
+      "connection",
+      "timeout",
+      "latency",
+      "api"
+    ],
+    "body": "# Past Incident - Redis Connection Exhaustion Caused API Latency\n\nAPI latency increased when a client release opened too many Redis connections.\nCache timeouts caused fallback reads against Postgres.\n\n## What Helped\n\n- Redis connection count and command timeout rate rose before API p99 latency.\n- Postgres read load increased after cache hit rate fell.\n- Rolling back the client connection-pool change restored cache stability.\n\n## Follow-Up Actions\n\n- Add client-side connection limits.\n- Alert on cache timeout rate and hit-rate drop.\n- Include Redis connection count in API latency triage."
+  },
+  {
+    "source_id": "PI-009",
+    "title": "Past Incident - AWS NAT Gateway Data Transfer Cost Spike",
+    "type": "past_incident",
+    "tags": [
+      "aws",
+      "cost",
+      "nat-gateway",
+      "data-transfer",
+      "account",
+      "service",
+      "usage-type"
+    ],
+    "body": "# Past Incident - AWS NAT Gateway Data Transfer Cost Spike\n\nAWS spend increased after a private workload began routing large cross-AZ data\ntransfers through NAT Gateway.\n\n## What Helped\n\n- Cost Explorer grouped by service and usage type identified NAT Gateway data\n  processing.\n- Linked account and tag breakdowns identified the workload owner.\n- Moving traffic to a private endpoint reduced recurring cost.\n\n## Follow-Up Actions\n\n- Alert on daily NAT Gateway spend.\n- Add owner tags to networking resources.\n- Review cross-AZ traffic during architecture reviews."
+  },
+  {
+    "source_id": "PI-010",
+    "title": "Past Incident - Fast SLO Burn From API 5xx Spike",
+    "type": "past_incident",
+    "tags": [
+      "slo",
+      "burn-rate",
+      "api",
+      "5xx",
+      "error-budget",
+      "paging"
+    ],
+    "body": "# Past Incident - Fast SLO Burn From API 5xx Spike\n\nAn API 5xx spike consumed error budget quickly. The old threshold alert fired\nlate, while the burn-rate dashboard showed user impact earlier.\n\n## What Helped\n\n- Short-window and long-window burn-rate alerts identified severity.\n- Error budget consumed made the escalation decision clear.\n- A rollback reduced 5xx before the next customer update.\n\n## Follow-Up Actions\n\n- Replace static 5xx threshold pages with multi-window burn-rate alerts.\n- Include SLO burn in incident severity guidance.\n- Track missed page and false escalation rates."
+  },
+  {
+    "source_id": "RB-001",
+    "title": "Checkout 5xx And Payment Failure Runbook",
+    "type": "runbook",
+    "tags": [
+      "checkout",
+      "payments",
+      "5xx",
+      "api-gateway",
+      "postgres",
+      "na"
+    ],
+    "body": "# Checkout 5xx And Payment Failure Runbook\n\nUse this runbook when checkout has elevated 5xx errors, payment failures, cart\nabandonment, or customer complaints.\n\n## First 15 Minutes\n\n1. Confirm impact from read-only dashboards: checkout request rate, 5xx rate,\n   payment authorization failures, latency, and regional split.\n2. Compare the incident window against the most recent deploy, feature flag\n   change, dependency status, and API gateway errors.\n3. Check payment provider timeout and decline-code distribution before assuming\n   the database is the cause.\n4. Inspect Postgres saturation signals: connection count, lock waits, slow\n   queries, CPU, storage latency, and connection pool exhaustion.\n5. Escalate to payments, database, and platform owners if customer-impacting\n   errors continue for more than one alert window.\n\n## Rollback Criteria\n\nRollback or disable the latest checkout/payment change when error rate or\npayment failure rate remains elevated after mitigation, and when the change is\nwithin the incident window.\n\n## Evidence To Cite\n\n- API gateway 5xx and p95/p99 latency.\n- Payment authorization failures and provider timeouts.\n- Postgres connection pool, lock waits, and slow query samples.\n- Deploy and feature-flag timeline."
+  },
+  {
+    "source_id": "RB-002",
+    "title": "Postgres Saturation Runbook",
+    "type": "runbook",
+    "tags": [
+      "postgres",
+      "database",
+      "saturation",
+      "connections",
+      "locks",
+      "slow-query"
+    ],
+    "body": "# Postgres Saturation Runbook\n\nUse this runbook when a service backed by Postgres shows elevated latency,\ntimeouts, connection errors, or queueing.\n\n## Read-Only Checks\n\n1. Check active connections, connection pool saturation, and wait events.\n2. Review slow queries, lock waits, deadlocks, and long-running transactions.\n3. Compare database CPU, memory, IOPS, storage latency, and replica lag against\n   the previous healthy baseline.\n4. Confirm whether application retries are amplifying database load.\n5. Check whether a deploy introduced a query-plan regression or missing index.\n\n## Mitigation Options\n\n- Shed non-critical traffic or disable expensive optional paths.\n- Increase connection pool backpressure before scaling application pods.\n- Roll back the deploy that introduced the query regression.\n- Add a targeted index only after validating plan impact outside the hot path.\n\n## Evidence To Cite\n\n- Connection pool utilization.\n- Query latency percentiles and slow-query examples.\n- Lock wait and transaction age.\n- Database CPU, IOPS, storage latency, and replica lag."
+  },
+  {
+    "source_id": "RB-003",
+    "title": "Kubernetes Pod Health Runbook",
+    "type": "runbook",
+    "tags": [
+      "kubernetes",
+      "pods",
+      "crashloopbackoff",
+      "rollout",
+      "node-pressure",
+      "kubectl"
+    ],
+    "body": "# Kubernetes Pod Health Runbook\n\nUse this runbook when pods are unhealthy, deployments are stuck, or node\npressure may be affecting workloads.\n\n## Read-Only Checks\n\n1. Run `kubectl get pods` with namespace and label selectors to identify pod\n   phase, restarts, readiness, and age.\n2. Run `kubectl describe pod` for events such as image pull failures, failed\n   probes, OOMKilled, and scheduling issues.\n3. Run `kubectl logs --tail` for recent application errors without changing\n   workload state.\n4. Run `kubectl rollout status deployment/<name>` and compare desired,\n   updated, available, and unavailable replicas.\n5. Run `kubectl describe node` when pods are pending or evicted and check CPU,\n   memory, disk, and PID pressure.\n\n## Evidence To Cite\n\n- Pod phase and restart count.\n- CrashLoopBackOff, OOMKilled, probe failure, or scheduling event.\n- Deployment replica health.\n- Node pressure condition."
+  },
+  {
+    "source_id": "RB-004",
+    "title": "Pager Noise And Alert Deflection Runbook",
+    "type": "runbook",
+    "tags": [
+      "pager-noise",
+      "alerts",
+      "dedupe",
+      "burn-rate",
+      "slo",
+      "runbook",
+      "alert-quality"
+    ],
+    "body": "# Pager Noise And Alert Deflection Runbook\n\nUse this runbook when an alert repeatedly pages but resolves without action or\ndoes not represent customer impact.\n\n## Alert Review\n\n1. Separate paging alerts from ticket-only or dashboard-only alerts.\n2. Measure whether the alert correlates with SLO burn, customer impact, error\n   budget consumption, or operator action.\n3. Add dedupe keys for service, region, dependency, and symptom so one incident\n   does not create many pages.\n4. Use multi-window burn-rate alerts for availability and latency SLOs instead\n   of single-sample threshold pages.\n5. Route known recurring low-impact alerts to a ticket with runbook context,\n   while preserving pages for high-severity customer impact.\n\n## Deflection Criteria\n\nAn alert can be deflected from paging when it is known, self-resolving, has no\ncustomer impact, and has a ticket/runbook owner.\n\n## Evidence To Cite\n\n- Page volume before and after tuning.\n- False escalation count.\n- SLO burn rate and customer impact.\n- Dedupe key effectiveness."
+  },
+  {
+    "source_id": "RB-005",
+    "title": "AWS Cost Spike Triage Runbook",
+    "type": "runbook",
+    "tags": [
+      "aws",
+      "cost",
+      "cost-explorer",
+      "budget",
+      "service",
+      "account",
+      "tag",
+      "anomaly",
+      "nat-gateway"
+    ],
+    "body": "# AWS Cost Spike Triage Runbook\n\nUse this runbook when AWS spend increases unexpectedly month over month, week\nover week, or day over day.\n\n## First Checks\n\n1. Confirm the time window and compare current month-to-date spend against the\n   same number of days in the prior month.\n2. Break down cost by service, linked account, region, usage type, and tag.\n3. Exclude Support, Tax, credits, Marketplace, and known fixed commitments when\n   investigating usage-driven spikes.\n4. Check daily trend for a step change after a deploy, migration, data transfer\n   event, or workload schedule change.\n5. Look for NAT Gateway data processing, inter-AZ transfer, CloudWatch log\n   ingestion, S3 request volume, and idle compute.\n\n## Recommendations\n\n- Attach owner and environment tags to untagged cost drivers.\n- Create budget alerts for abnormal daily spend and forecasted overrun.\n- Prefer private endpoints or same-AZ traffic patterns when NAT cost spikes.\n- Review retention on high-ingestion logs.\n\n## Evidence To Cite\n\n- Service, linked account, region, usage type, and tag breakdowns.\n- Month-to-date versus previous month comparison.\n- Day-by-day trend and step-change date."
+  },
+  {
+    "source_id": "RB-006",
+    "title": "Deploy Rollback And Feature Flag Runbook",
+    "type": "runbook",
+    "tags": [
+      "deploy",
+      "rollback",
+      "canary",
+      "feature-flag",
+      "release",
+      "error-rate",
+      "latency"
+    ],
+    "body": "# Deploy Rollback And Feature Flag Runbook\n\nUse this runbook when an incident may be connected to a recent deploy, canary,\nconfiguration change, or feature flag.\n\n## Read-Only Checks\n\n1. Compare error rate, latency, saturation, and business metrics before and\n   after the deploy timestamp.\n2. Check whether the impact is limited to the new version, canary cohort, region,\n   or feature-flag audience.\n3. Confirm database migrations, schema compatibility, config changes, and\n   dependency version changes.\n4. Validate whether rollback is safe for data compatibility and idempotency.\n\n## Rollback Criteria\n\nRollback, disable the feature flag, or halt rollout when the new version is in\nthe incident window and error rate, latency, or customer impact remains elevated\nafter low-risk mitigations.\n\n## Evidence To Cite\n\n- Deploy timeline and version split.\n- Canary versus stable metrics.\n- Feature flag exposure.\n- Rollback validation checklist."
+  },
+  {
+    "source_id": "RB-007",
+    "title": "CDN DNS And Edge Outage Runbook",
+    "type": "runbook",
+    "tags": [
+      "cdn",
+      "dns",
+      "cloudfront",
+      "route53",
+      "waf",
+      "cache",
+      "edge",
+      "403",
+      "404",
+      "tls"
+    ],
+    "body": "# CDN DNS And Edge Outage Runbook\n\nUse this runbook when users report regional reachability issues, stale content,\nTLS errors, 403/404 responses at the edge, or DNS resolution failures.\n\n## Read-Only Checks\n\n1. Compare browser errors, CDN 4xx/5xx, origin 5xx, and DNS lookup failures by\n   region and ISP.\n2. Verify DNS records, TTL, hosted zone changes, certificate validity, and\n   propagation timing.\n3. Check CDN cache behavior, origin routing, WAF blocks, signed URL policies,\n   and recent invalidations.\n4. Confirm whether origin is healthy before purging cache or changing DNS.\n\n## Mitigation Options\n\n- Revert the most recent cache behavior or WAF rule.\n- Fail over DNS only after confirming origin readiness.\n- Invalidate a narrow path if stale or poisoned content is isolated.\n\n## Evidence To Cite\n\n- CDN status codes and cache result type.\n- DNS records and TTL.\n- WAF rule matches.\n- Origin health and regional error split."
+  },
+  {
+    "source_id": "RB-008",
+    "title": "Authentication And Login Degradation Runbook",
+    "type": "runbook",
+    "tags": [
+      "auth",
+      "login",
+      "oauth",
+      "oidc",
+      "token",
+      "session",
+      "401",
+      "403",
+      "identity"
+    ],
+    "body": "# Authentication And Login Degradation Runbook\n\nUse this runbook when login, session refresh, OAuth/OIDC callback, or token\nvalidation paths fail.\n\n## Read-Only Checks\n\n1. Check login success rate, 401/403 rate, token refresh errors, callback\n   latency, and identity-provider status.\n2. Compare failures by client, region, identity provider, and application\n   version.\n3. Verify certificate rotation, JWKS cache age, redirect URI config, clock skew,\n   and session store saturation.\n4. Confirm whether retries are creating duplicate login attempts or account\n   lockouts.\n\n## Mitigation Options\n\n- Roll back auth config or feature flag changes.\n- Reduce JWKS cache TTL only if key rotation evidence supports it.\n- Route users to a fallback identity provider if that path is tested.\n\n## Evidence To Cite\n\n- Login success and token refresh error rates.\n- Identity provider status and callback latency.\n- JWKS, certificate, redirect URI, and clock-skew checks."
+  },
+  {
+    "source_id": "RB-009",
+    "title": "Queue Backlog And Worker Saturation Runbook",
+    "type": "runbook",
+    "tags": [
+      "queue",
+      "backlog",
+      "workers",
+      "kafka",
+      "sqs",
+      "consumer-lag",
+      "retries",
+      "dead-letter"
+    ],
+    "body": "# Queue Backlog And Worker Saturation Runbook\n\nUse this runbook when asynchronous processing is delayed, consumer lag grows, or\ndead-letter queues increase.\n\n## Read-Only Checks\n\n1. Check backlog depth, consumer lag, oldest message age, retry rate, and\n   dead-letter queue volume.\n2. Compare producer rate versus consumer throughput and worker saturation.\n3. Identify poison messages, schema changes, downstream dependency failures, and\n   retry storms.\n4. Verify autoscaling limits, worker concurrency, and partition assignment.\n\n## Mitigation Options\n\n- Pause or rate-limit non-critical producers.\n- Move poison messages to a quarantine path with owner approval.\n- Scale workers only after checking downstream capacity.\n\n## Evidence To Cite\n\n- Backlog depth and oldest message age.\n- Consumer lag and worker saturation.\n- Dead-letter queue trend and retry reason."
+  },
+  {
+    "source_id": "RB-010",
+    "title": "Redis Cache Degradation Runbook",
+    "type": "runbook",
+    "tags": [
+      "redis",
+      "cache",
+      "memory",
+      "eviction",
+      "connection",
+      "timeout",
+      "hot-key",
+      "latency"
+    ],
+    "body": "# Redis Cache Degradation Runbook\n\nUse this runbook when cache latency, Redis timeouts, evictions, connection\nerrors, or hot-key behavior affect application performance.\n\n## Read-Only Checks\n\n1. Check Redis CPU, memory, maxmemory policy, evictions, fragmentation, and\n   connection count.\n2. Compare command latency, slowlog, timeout rate, and network errors.\n3. Look for hot keys, cache stampede, high cardinality keys, and TTL changes.\n4. Verify whether database load increased because cache hit rate dropped.\n\n## Mitigation Options\n\n- Add request coalescing or jittered TTL for stampede patterns.\n- Increase connection pooling backpressure before scaling clients.\n- Roll back cache key or TTL changes that match the incident window.\n\n## Evidence To Cite\n\n- Cache hit rate and Redis command latency.\n- Evictions, memory pressure, and connection count.\n- Database load after cache miss increase."
+  },
+  {
+    "source_id": "RB-011",
+    "title": "SLO Burn Rate And Error Budget Runbook",
+    "type": "runbook",
+    "tags": [
+      "slo",
+      "burn-rate",
+      "error-budget",
+      "alerting",
+      "availability",
+      "latency",
+      "paging"
+    ],
+    "body": "# SLO Burn Rate And Error Budget Runbook\n\nUse this runbook to review whether an alert should page based on customer impact,\nSLO burn, and error budget consumption.\n\n## Review Steps\n\n1. Define the user-visible SLI: availability, latency, correctness, durability,\n   or freshness.\n2. Calculate short-window and long-window burn rate before paging.\n3. Separate symptoms that affect users from internal-only saturation or noisy\n   warning thresholds.\n4. Page when fast burn threatens the objective; create tickets for slow burn or\n   non-customer-impacting issues.\n5. Track false escalations, missed pages, alert fatigue, and time to\n   acknowledgment.\n\n## Evidence To Cite\n\n- SLI numerator and denominator.\n- Error budget consumed.\n- Short-window and long-window burn rate.\n- Customer impact and false escalation count."
+  },
+  {
+    "source_id": "RB-012",
+    "title": "Incident Handoff And Communications Runbook",
+    "type": "runbook",
+    "tags": [
+      "incident",
+      "handoff",
+      "communications",
+      "status-page",
+      "customer-comms",
+      "timeline"
+    ],
+    "body": "# Incident Handoff And Communications Runbook\n\nUse this runbook when an incident needs an incident commander, structured\nhandoff, customer communications, or post-incident follow-up.\n\n## Handoff Checklist\n\n1. State current severity, impact, start time, affected users, and active\n   mitigations.\n2. Capture timeline, hypotheses, evidence, decisions, owners, and next update\n   time.\n3. Separate confirmed facts from suspected causes.\n4. Include rollback criteria, escalation path, and customer communication status.\n\n## Communication Guidance\n\n- Initial update: acknowledge impact, scope, and investigation status.\n- Follow-up: include mitigation progress and next update time.\n- Resolved update: state recovery, monitoring, and post-incident review.\n- Avoid naming root cause until evidence is confirmed.\n\n## Evidence To Cite\n\n- Incident timeline.\n- Confirmed impact and affected region.\n- Owner list and action items.\n- Next communication time."
+  },
+  {
+    "source_id": "RB-013",
+    "title": "AWS Core Infrastructure Triage Runbook",
+    "type": "runbook",
+    "tags": [
+      "aws",
+      "ec2",
+      "rds",
+      "s3",
+      "iam",
+      "connectivity",
+      "region",
+      "load-balancer",
+      "security-group"
+    ],
+    "body": "# AWS Core Infrastructure Triage Runbook\n\nUse this runbook when AWS infrastructure may be contributing to an incident.\n\n## Read-Only Checks\n\n1. Confirm caller identity, account, region, and assumed role before checking\n   resources.\n2. Review load balancer target health, security group changes, route tables, and\n   DNS records.\n3. Check EC2 instance health, autoscaling events, and recent deployment activity.\n4. Check RDS status, failover events, connection count, and storage saturation.\n5. Check S3 4xx/5xx, bucket policy changes, and access denied errors.\n\n## Safety Notes\n\nPrefer describe/list/status calls first. Do not change IAM, networking, or\ndatabase configuration without explicit confirmation and rollback plan.\n\n## Evidence To Cite\n\n- Account and region.\n- Load balancer target health.\n- EC2/RDS/S3 status.\n- Recent IAM, security group, or route changes."
+  },
+  {
+    "source_id": "RB-014",
+    "title": "Kubernetes Rollout And HPA Runbook",
+    "type": "runbook",
+    "tags": [
+      "kubernetes",
+      "rollout",
+      "hpa",
+      "deployment",
+      "autoscaling",
+      "readiness",
+      "replicas"
+    ],
+    "body": "# Kubernetes Rollout And HPA Runbook\n\nUse this runbook when a Kubernetes rollout is stuck, replicas are unavailable,\nor autoscaling is not keeping up with load.\n\n## Read-Only Checks\n\n1. Check deployment desired, updated, available, and unavailable replicas.\n2. Check rollout status, ReplicaSet age, pod readiness, restarts, and events.\n3. Inspect HPA current metrics, target utilization, scaling limits, and recent\n   scale events.\n4. Compare resource requests, limits, throttling, OOMKills, and node pressure.\n5. Confirm readiness and liveness probe failures before restarting workloads.\n\n## Mitigation Options\n\n- Pause rollout or roll back only after confirming the new version is unhealthy.\n- Raise HPA max replicas only after downstream capacity is verified.\n- Fix probe configuration when healthy pods are being removed from service.\n\n## Evidence To Cite\n\n- Deployment replica health.\n- HPA current versus target metrics.\n- Pod readiness, events, and resource pressure."
+  }
+]

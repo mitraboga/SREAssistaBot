@@ -67,9 +67,15 @@ def score_query(case: dict[str, Any], top_k: int) -> dict[str, Any]:
 def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "case_count": len(results),
-        "hit_at_1": round(sum(1 for result in results if result["hit_at_1"]) / max(len(results), 1), 3),
-        "hit_at_3": round(sum(1 for result in results if result["hit_at_3"]) / max(len(results), 1), 3),
-        "hit_at_5": round(sum(1 for result in results if result["hit_at_5"]) / max(len(results), 1), 3),
+        "hit_at_1": round(
+            sum(1 for result in results if result["hit_at_1"]) / max(len(results), 1), 3
+        ),
+        "hit_at_3": round(
+            sum(1 for result in results if result["hit_at_3"]) / max(len(results), 1), 3
+        ),
+        "hit_at_5": round(
+            sum(1 for result in results if result["hit_at_5"]) / max(len(results), 1), 3
+        ),
         "mrr": round(statistics.mean(result["reciprocal_rank"] for result in results), 3)
         if results
         else 0.0,
@@ -148,4 +154,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

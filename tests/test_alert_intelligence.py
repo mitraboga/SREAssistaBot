@@ -25,4 +25,3 @@ def test_nightly_self_resolving_alert_is_deflected():
     assert result["recommended_severity"] == "P4"
     assert result["recommended_route"] in {"dedupe_known_issue", "ticket"}
     assert result["known_issue"]
-

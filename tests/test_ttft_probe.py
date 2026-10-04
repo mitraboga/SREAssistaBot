@@ -10,4 +10,3 @@ def test_parse_sse_data_extracts_json_payload():
 def test_event_has_text_detects_adk_text_event():
     assert event_has_text({"content": {"parts": [{"text": "hello"}]}}) is True
     assert event_has_text({"error": "model failed"}) is False
-

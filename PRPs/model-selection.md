@@ -121,6 +121,7 @@ def validate_provider_requirements(provider_name, api_key, additional_checks=Non
     logger.info(f"✓ {provider_name} provider configured successfully")
     return True
 
+
 def get_configured_model():
     """
     Determine model configuration based on available API keys.
@@ -141,6 +142,7 @@ def get_configured_model():
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
     if anthropic_key and anthropic_key.strip():
         from google.adk.models.lite_llm import LiteLlm
+
         model_name = os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20240620")
         logger.info(f"🚀 Using Anthropic Claude provider with model: {model_name}")
         logger.info("✓ ANTHROPIC_API_KEY found and validated")
@@ -151,14 +153,17 @@ def get_configured_model():
     if bedrock_profile and bedrock_profile.strip():
         # Validate AWS credentials are available
         import boto3
+
         try:
             # Test AWS credentials
-            sts = boto3.client('sts')
+            sts = boto3.client("sts")
             identity = sts.get_caller_identity()
             logger.info(f"✓ AWS credentials validated for account: {identity['Account']}")
         except Exception as e:
             logger.error("❌ AWS Bedrock configuration error:")
-            logger.error("   - BEDROCK_INFERENCE_PROFILE is set but AWS credentials are not configured")
+            logger.error(
+                "   - BEDROCK_INFERENCE_PROFILE is set but AWS credentials are not configured"
+            )
             logger.error("   - Please configure AWS credentials via:")
             logger.error("     • AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables")
             logger.error("     • AWS profile via AWS_PROFILE environment variable")
@@ -170,6 +175,7 @@ def get_configured_model():
             )
 
         from google.adk.models.lite_llm import LiteLlm
+
         # LiteLLM requires bedrock/ prefix for AWS Bedrock models
         bedrock_model = f"bedrock/{bedrock_profile}"
         logger.info(f"🚀 Using AWS Bedrock provider with profile: {bedrock_profile}")
@@ -260,7 +266,9 @@ def get_configured_model():
 ```python
 class ModelConfigurationError(Exception):
     """Raised when model configuration fails."""
+
     pass
+
 
 # Example startup output for each scenario:
 
@@ -314,23 +322,23 @@ from unittest.mock import patch, MagicMock
 from agents.sre_agent.utils import get_configured_model, ModelConfigurationError
 from google.adk.models.lite_llm import LiteLlm
 
-class TestModelConfiguration:
 
+class TestModelConfiguration:
     def test_google_api_key_returns_gemini(self):
         """Test that Google API key results in Gemini model."""
-        with patch.dict(os.environ, {
-            "GOOGLE_API_KEY": "test-key",
-            "GOOGLE_AI_MODEL": "gemini-2.0-flash"
-        }):
+        with patch.dict(
+            os.environ, {"GOOGLE_API_KEY": "test-key", "GOOGLE_AI_MODEL": "gemini-2.0-flash"}
+        ):
             model = get_configured_model()
             assert model == "gemini-2.0-flash"
 
     def test_anthropic_api_key_returns_litellm(self):
         """Test that Anthropic API key results in LiteLlm wrapper."""
-        with patch.dict(os.environ, {
-            "ANTHROPIC_API_KEY": "test-key",
-            "ANTHROPIC_MODEL": "claude-3-5-sonnet-20240620"
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {"ANTHROPIC_API_KEY": "test-key", "ANTHROPIC_MODEL": "claude-3-5-sonnet-20240620"},
+            clear=True,
+        ):
             model = get_configured_model()
             assert isinstance(model, LiteLlm)
             assert model.model == "claude-3-5-sonnet-20240620"
@@ -340,17 +348,15 @@ class TestModelConfiguration:
         arn = "arn:aws:bedrock:us-west-2:812201244513:inference-profile/us.anthropic.claude-opus-4-1-20250805-v1:0"
 
         # Mock boto3 to simulate valid AWS credentials
-        with patch('boto3.client') as mock_boto:
+        with patch("boto3.client") as mock_boto:
             mock_sts = MagicMock()
             mock_sts.get_caller_identity.return_value = {
-                'Account': '123456789012',
-                'Arn': 'arn:aws:iam::123456789012:user/test'
+                "Account": "123456789012",
+                "Arn": "arn:aws:iam::123456789012:user/test",
             }
             mock_boto.return_value = mock_sts
 
-            with patch.dict(os.environ, {
-                "BEDROCK_INFERENCE_PROFILE": arn
-            }, clear=True):
+            with patch.dict(os.environ, {"BEDROCK_INFERENCE_PROFILE": arn}, clear=True):
                 model = get_configured_model()
                 assert isinstance(model, LiteLlm)
                 assert model.model == arn
@@ -360,41 +366,45 @@ class TestModelConfiguration:
         arn = "arn:aws:bedrock:us-west-2:812201244513:inference-profile/test"
 
         # Mock boto3 to simulate missing credentials
-        with patch('boto3.client') as mock_boto:
+        with patch("boto3.client") as mock_boto:
             mock_boto.side_effect = Exception("Unable to locate credentials")
 
-            with patch.dict(os.environ, {
-                "BEDROCK_INFERENCE_PROFILE": arn
-            }, clear=True):
+            with patch.dict(os.environ, {"BEDROCK_INFERENCE_PROFILE": arn}, clear=True):
                 with pytest.raises(ModelConfigurationError) as exc_info:
                     get_configured_model()
                 assert "Bedrock requires valid AWS credentials" in str(exc_info.value)
 
     def test_empty_api_key_values_are_ignored(self):
         """Test that empty string API keys are treated as missing."""
-        with patch.dict(os.environ, {
-            "GOOGLE_API_KEY": "",
-            "ANTHROPIC_API_KEY": "   ",  # whitespace only
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "GOOGLE_API_KEY": "",
+                "ANTHROPIC_API_KEY": "   ",  # whitespace only
+            },
+            clear=True,
+        ):
             with pytest.raises(ModelConfigurationError) as exc_info:
                 get_configured_model()
             assert "No AI provider API key found" in str(exc_info.value)
 
     def test_priority_order_google_over_anthropic(self):
         """Test that Google takes precedence over Anthropic."""
-        with patch.dict(os.environ, {
-            "GOOGLE_API_KEY": "google-key",
-            "ANTHROPIC_API_KEY": "anthropic-key"
-        }):
+        with patch.dict(
+            os.environ, {"GOOGLE_API_KEY": "google-key", "ANTHROPIC_API_KEY": "anthropic-key"}
+        ):
             model = get_configured_model()
             assert isinstance(model, str)  # Google returns string
 
     def test_priority_order_anthropic_over_bedrock(self):
         """Test that Anthropic takes precedence over Bedrock."""
-        with patch.dict(os.environ, {
-            "ANTHROPIC_API_KEY": "anthropic-key",
-            "BEDROCK_INFERENCE_PROFILE": "arn:aws:bedrock:test"
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "ANTHROPIC_API_KEY": "anthropic-key",
+                "BEDROCK_INFERENCE_PROFILE": "arn:aws:bedrock:test",
+            },
+        ):
             model = get_configured_model()
             assert isinstance(model, LiteLlm)
             assert "claude" in model.model.lower()

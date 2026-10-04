@@ -139,7 +139,9 @@ def _idf_by_token(documents: tuple[KnowledgeDocument, ...]) -> dict[str, float]:
     }
 
 
-def _score_document(query_tokens: list[str], document: KnowledgeDocument, idf: dict[str, float]) -> float:
+def _score_document(
+    query_tokens: list[str], document: KnowledgeDocument, idf: dict[str, float]
+) -> float:
     if not query_tokens:
         return 0.0
 
@@ -161,8 +163,12 @@ def _score_document(query_tokens: list[str], document: KnowledgeDocument, idf: d
     return score * (0.75 + coverage)
 
 
-def _make_snippet(document: KnowledgeDocument, query_tokens: list[str], max_chars: int = 420) -> str:
-    paragraphs = [paragraph.strip() for paragraph in document.body.split("\n\n") if paragraph.strip()]
+def _make_snippet(
+    document: KnowledgeDocument, query_tokens: list[str], max_chars: int = 420
+) -> str:
+    paragraphs = [
+        paragraph.strip() for paragraph in document.body.split("\n\n") if paragraph.strip()
+    ]
     if not paragraphs:
         return ""
 
@@ -189,10 +195,7 @@ def retrieve_documents(query: str, top_k: int = 5) -> list[dict[str, Any]]:
         return []
 
     idf = _idf_by_token(documents)
-    scored = [
-        (_score_document(query_tokens, document, idf), document)
-        for document in documents
-    ]
+    scored = [(_score_document(query_tokens, document, idf), document) for document in documents]
     scored = [(score, document) for score, document in scored if score > 0]
     scored.sort(key=lambda item: item[0], reverse=True)
 

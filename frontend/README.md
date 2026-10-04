@@ -6,14 +6,14 @@ FastAPI / Google ADK backend. Slack and the ADK developer UI remain available.
 
 ## Run the offline demo
 
-Install Git and Node.js 24. To download the React workspace before
-[PR #1](https://github.com/mitraboga/SREAssistaBot/pull/1) is merged into `main`,
-open a terminal in the folder where you want to download the project.
+Install Git and Node.js 24. Open a terminal in the folder where you want to
+download the project. The commands below clone `main`, including the React
+workspace in `frontend/`.
 
 **Windows PowerShell:** run each command one at a time:
 
 ```powershell
-git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+git clone --branch main https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
 cd .\SREAssistaBot-React\frontend
 npm.cmd ci
 npm.cmd run dev
@@ -22,16 +22,15 @@ npm.cmd run dev
 **macOS/Linux:**
 
 ```bash
-git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+git clone --branch main https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
 cd SREAssistaBot-React/frontend
 npm ci
 npm run dev
 ```
 
-Already have a local Git checkout? From that repository's root, run
-`git fetch origin`, `git switch feat/react-incident-workspace`, and `cd frontend`,
-then install/start with the npm commands for your operating system above.
-After the PR is merged, a normal clone of `main` also includes the frontend.
+Already have an up-to-date local checkout of `main`? From that repository's root,
+run `cd frontend`, then install/start with the npm commands for your operating
+system above.
 
 Open the exact URL printed beside **Local:**, normally <http://localhost:5173>.
 Vite may choose another port if 5173 is occupied. Keep the terminal open while

@@ -76,15 +76,14 @@ The `frontend/` React + TypeScript app adds four connected workflows:
 Install **Git and Node.js 24** first. The default **Demo** environment needs no
 Python backend, model, Slack, AWS, Kubernetes, database, or API keys.
 
-The commands below explicitly download the React branch, so visitors can try it
-before [PR #1](https://github.com/mitraboga/SREAssistaBot/pull/1) is merged into
-`main`. After the merge, a normal clone of `main` will also include `frontend/`.
+The commands below download `main`, which includes the React workspace in
+`frontend/`.
 
 **Windows PowerShell:** open a terminal in the folder where you want to download
 the project, then run these commands one at a time:
 
 ```powershell
-git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+git clone --branch main https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
 cd .\SREAssistaBot-React\frontend
 npm.cmd ci
 npm.cmd run dev
@@ -94,7 +93,7 @@ npm.cmd run dev
 project, then run:
 
 ```bash
-git clone --branch feat/react-incident-workspace --single-branch https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+git clone --branch main https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
 cd SREAssistaBot-React/frontend
 npm ci
 npm run dev

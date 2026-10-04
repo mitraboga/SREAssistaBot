@@ -166,9 +166,7 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
     ]
     passed = [result for result in results if result.get("score", {}).get("passed")]
     unsupported = [
-        result
-        for result in results
-        if result.get("score", {}).get("unsupported_live_claims")
+        result for result in results if result.get("score", {}).get("unsupported_live_claims")
     ]
 
     unsupported_live_claim_rate = round(len(unsupported) / max(len(results), 1), 3)

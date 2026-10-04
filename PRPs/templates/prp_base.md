@@ -114,7 +114,6 @@ Task N:
 ### Per task pseudocode as needed added to each task
 
 ```python
-
 # Task 1
 # Pseudocode with CRITICAL details dont write entire code
 async def new_feature(param: str) -> Result:
@@ -173,14 +172,16 @@ def test_happy_path():
     result = new_feature("valid_input")
     assert result.status == "success"
 
+
 def test_validation_error():
     """Invalid input raises ValidationError"""
     with pytest.raises(ValidationError):
         new_feature("")
 
+
 def test_external_api_timeout():
     """Handles timeouts gracefully"""
-    with mock.patch('external_api.call', side_effect=TimeoutError):
+    with mock.patch("external_api.call", side_effect=TimeoutError):
         result = new_feature("valid")
         assert result.status == "error"
         assert "timeout" in result.message

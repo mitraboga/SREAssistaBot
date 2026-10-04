@@ -4,6 +4,8 @@
   local incident coordination, runbook exploration, alert triage, tests, and setup docs.
 - [x] 2026-10-04: Document complete visitor setup for Windows/macOS/Linux,
   restarting the React demo, connection troubleshooting, and public/live hosting scope.
+- [x] 2026-10-04: Resolve existing formatting failures and update visitor
+  commands to clone main in preparation for merging the React workspace.
 
 ## Discovered During Work
 

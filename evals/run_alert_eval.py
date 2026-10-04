@@ -80,8 +80,12 @@ def summarize(results: list[dict[str, Any]]) -> dict[str, Any]:
 
     return {
         "case_count": len(results),
-        "page_decision_accuracy": _rate(sum(1 for result in results if result["page_correct"]), len(results)),
-        "severity_accuracy": _rate(sum(1 for result in results if result["severity_correct"]), len(results)),
+        "page_decision_accuracy": _rate(
+            sum(1 for result in results if result["page_correct"]), len(results)
+        ),
+        "severity_accuracy": _rate(
+            sum(1 for result in results if result["severity_correct"]), len(results)
+        ),
         "known_issue_hit_rate": _rate(known_hits, len(expected_known)),
         "alert_deflection_rate": _rate(
             sum(1 for result in results if not result["predicted_should_page"]),
@@ -150,9 +154,10 @@ def main() -> int:
     print(f"Wrote {json_path}")
     print(f"Wrote {markdown_path}")
 
-    return 0 if summary["page_decision_accuracy"] >= 0.85 and summary["missed_page_rate"] == 0 else 1
+    return (
+        0 if summary["page_decision_accuracy"] >= 0.85 and summary["missed_page_rate"] == 0 else 1
+    )
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

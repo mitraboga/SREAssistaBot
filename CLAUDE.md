@@ -198,11 +198,15 @@ This project follows Google ADK's latest patterns and best practices:
   ```python
   # Basic logging (recommended for most modules)
   from agents.sre_agent.utils import get_logger
+
   logger = get_logger(__name__)
 
   # Custom logging (for servers or special requirements)
   from agents.sre_agent.utils import setup_logger
-  logger = setup_logger("SERVICE_NAME", format_string="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+  logger = setup_logger(
+      "SERVICE_NAME", format_string="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  )
   ```
 
 - **Never use**: `logging.basicConfig()` or `logging.getLogger()` directly in new code
@@ -217,10 +221,8 @@ Built using Slack Bolt's async patterns:
 from slack_bolt.async_app import AsyncApp
 from slack_bolt.adapter.fastapi.async_handler import AsyncSlackRequestHandler
 
-app = AsyncApp(
-    signing_secret="your_signing_secret",
-    token="your_bot_token"
-)
+app = AsyncApp(signing_secret="your_signing_secret", token="your_bot_token")
+
 
 @app.event("app_mention")
 async def handle_app_mention(body, say):
@@ -405,7 +407,7 @@ my_agent = Agent(
     model="gemini-2.5-flash",  # or other supported models
     instruction="You are a specialized assistant for...",
     description="Brief description for other agents",
-    tools=[tool1, tool2]  # List of tools/functions
+    tools=[tool1, tool2],  # List of tools/functions
 )
 
 # Multi-agent system with sub-agents
@@ -413,7 +415,7 @@ coordinator_agent = Agent(
     name="coordinator",
     model="gemini-2.5-flash",
     description="Coordinates multiple specialized agents",
-    sub_agents=[my_agent, another_agent]
+    sub_agents=[my_agent, another_agent],
 )
 ```
 
@@ -428,8 +430,10 @@ async def my_custom_tool(parameter: str) -> str:
     # Tool implementation
     return result
 
+
 # Class-based tool
 from google.adk.tools import BaseTool
+
 
 class MyCustomTool(BaseTool):
     def __init__(self, config):
@@ -450,15 +454,16 @@ async def handle_message(body, say, logger):
     """Handle direct messages"""
     logger.info(f"Message received: {body}")
     # Process with SRE agent
-    response = await send_to_sre_agent(body['text'])
+    response = await send_to_sre_agent(body["text"])
     await say(response)
+
 
 @app.command("/custom-command")
 async def handle_custom_command(ack, body, respond):
     """Handle custom slash commands"""
     await ack()
     # Process command
-    result = await process_command(body['text'])
+    result = await process_command(body["text"])
     await respond(f"Result: {result}")
 ```
 

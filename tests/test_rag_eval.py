@@ -37,4 +37,3 @@ def test_rag_summarize_computes_metrics():
 
     assert summary["hit_at_1"] == 1.0
     assert summary["mrr"] == 1.0
-

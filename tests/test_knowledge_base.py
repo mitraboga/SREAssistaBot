@@ -1,4 +1,8 @@
-from agents.sre_agent.tools.knowledge_base import retrieve_documents, search_knowledge_base, tokenize
+from agents.sre_agent.tools.knowledge_base import (
+    retrieve_documents,
+    search_knowledge_base,
+    tokenize,
+)
 
 
 def test_tokenize_removes_common_stop_words():
@@ -27,4 +31,3 @@ def test_retrieve_documents_matches_pager_noise_docs():
 
     source_ids = {result["source_id"] for result in results}
     assert {"RB-004", "PI-002"} & source_ids
-

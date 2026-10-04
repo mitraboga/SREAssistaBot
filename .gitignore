@@ -5,6 +5,11 @@ __pycache__/
 
 # Virtual environments
 .venv/
+venv_linux/
+node_modules/
+frontend/playwright-report/
+frontend/test-results/
+*.tsbuildinfo
 env/
 venv/
 ENV/
@@ -49,6 +54,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+!frontend/src/lib/
+!frontend/src/lib/**
 parts/
 sdist/
 var/

@@ -45,4 +45,3 @@ def test_alert_eval_summarize_reports_noise_reduction():
 
     assert summary["page_decision_accuracy"] == 1.0
     assert summary["pager_noise_reduction"] == 0.5
-

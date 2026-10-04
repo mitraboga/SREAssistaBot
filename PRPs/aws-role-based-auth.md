@@ -163,23 +163,35 @@ AWS_REGION=us-east-1
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, List
 
+
 class RoleConfig(BaseModel):
     """Configuration for a single AWS role."""
+
     role_arn: str = Field(..., description="ARN of the role to assume")
     account_id: str = Field(..., description="AWS account ID")
-    role_session_name: str = Field(default="SREBotSession", description="Session name for role assumption")
-    duration_seconds: int = Field(default=3600, ge=900, le=43200, description="Session duration in seconds")
+    role_session_name: str = Field(
+        default="SREBotSession", description="Session name for role assumption"
+    )
+    duration_seconds: int = Field(
+        default=3600, ge=900, le=43200, description="Session duration in seconds"
+    )
     external_id: Optional[str] = Field(None, description="External ID for third-party access")
+
 
 class AWSAuthConfig(BaseModel):
     """Main configuration for AWS authentication."""
+
     default_region: str = Field(default="us-east-1", description="Default AWS region")
     default_profile: Optional[str] = Field(None, description="Default AWS profile")
-    roles: Dict[str, RoleConfig] = Field(default_factory=dict, description="Named role configurations")
+    roles: Dict[str, RoleConfig] = Field(
+        default_factory=dict, description="Named role configurations"
+    )
     enable_role_chaining: bool = Field(default=False, description="Allow role chaining")
+
 
 class AWSCredentials(BaseModel):
     """Temporary AWS credentials from STS."""
+
     access_key_id: str
     secret_access_key: str
     session_token: str
@@ -266,7 +278,9 @@ class AWSAuthService:
         self._credential_cache = {}  # Role ARN -> (credentials, expiry)
         self._sts_client = None
 
-    async def get_client(self, service: str, role_name: Optional[str] = None, region: Optional[str] = None):
+    async def get_client(
+        self, service: str, role_name: Optional[str] = None, region: Optional[str] = None
+    ):
         """Get authenticated boto3 client for any AWS service."""
         # PATTERN: Check credential cache first
         if role_name and not self._credentials_valid(role_name):
@@ -280,7 +294,7 @@ class AWSAuthService:
                 aws_access_key_id=credentials.access_key_id,
                 aws_secret_access_key=credentials.secret_access_key,
                 aws_session_token=credentials.session_token,
-                region_name=region or self.config.default_region
+                region_name=region or self.config.default_region,
             )
         else:
             # FALLBACK: Default credentials (existing behavior)
@@ -292,25 +306,23 @@ class AWSAuthService:
         sts_client = self._get_sts_client()
 
         params = {
-            'RoleArn': role_config.role_arn,
-            'RoleSessionName': f"{role_config.role_session_name}_{int(time.time())}",
-            'DurationSeconds': role_config.duration_seconds
+            "RoleArn": role_config.role_arn,
+            "RoleSessionName": f"{role_config.role_session_name}_{int(time.time())}",
+            "DurationSeconds": role_config.duration_seconds,
         }
 
         if role_config.external_id:
-            params['ExternalId'] = role_config.external_id
+            params["ExternalId"] = role_config.external_id
 
         # PATTERN: Async execution with comprehensive error handling
         try:
-            response = await self._run_in_executor(
-                sts_client.assume_role, **params
-            )
-            return AWSCredentials(**response['Credentials'], region=self.config.default_region)
+            response = await self._run_in_executor(sts_client.assume_role, **params)
+            return AWSCredentials(**response["Credentials"], region=self.config.default_region)
         except ClientError as e:
-            error_code = e.response['Error']['Code']
-            if error_code == 'AccessDenied':
+            error_code = e.response["Error"]["Code"]
+            if error_code == "AccessDenied":
                 raise AuthenticationError(f"Access denied assuming role {role_config.role_arn}")
-            elif error_code == 'InvalidParameterValue':
+            elif error_code == "InvalidParameterValue":
                 raise ConfigurationError(f"Invalid role configuration: {e}")
             else:
                 raise AWSAuthError(f"Failed to assume role: {e}")
@@ -364,38 +376,40 @@ import pytest
 from unittest.mock import Mock, patch, AsyncMock
 from agents.sre_agent.aws_auth import AWSAuthService, AWSAuthConfig, RoleConfig
 
+
 @pytest.mark.asyncio
 async def test_get_client_default_credentials():
     """Test default credential behavior (backward compatibility)."""
     config = AWSAuthConfig()
     auth_service = AWSAuthService(config)
 
-    with patch('boto3.client') as mock_client:
-        client = await auth_service.get_client('s3')
-        mock_client.assert_called_once_with('s3', region_name='us-east-1')
+    with patch("boto3.client") as mock_client:
+        client = await auth_service.get_client("s3")
+        mock_client.assert_called_once_with("s3", region_name="us-east-1")
+
 
 @pytest.mark.asyncio
 async def test_assume_role_success():
     """Test successful role assumption."""
     role_config = RoleConfig(
-        role_arn="arn:aws:iam::123456789012:role/TestRole",
-        account_id="123456789012"
+        role_arn="arn:aws:iam::123456789012:role/TestRole", account_id="123456789012"
     )
     config = AWSAuthConfig(roles={"test": role_config})
     auth_service = AWSAuthService(config)
 
-    with patch.object(auth_service, '_run_in_executor') as mock_executor:
+    with patch.object(auth_service, "_run_in_executor") as mock_executor:
         mock_executor.return_value = {
-            'Credentials': {
-                'AccessKeyId': 'test_key',
-                'SecretAccessKey': 'test_secret',
-                'SessionToken': 'test_token',
-                'Expiration': '2025-01-01T00:00:00Z'
+            "Credentials": {
+                "AccessKeyId": "test_key",
+                "SecretAccessKey": "test_secret",
+                "SessionToken": "test_token",
+                "Expiration": "2025-01-01T00:00:00Z",
             }
         }
 
-        client = await auth_service.get_client('ec2', role_name='test')
+        client = await auth_service.get_client("ec2", role_name="test")
         assert client is not None
+
 
 @pytest.mark.asyncio
 async def test_authentication_error_handling():
@@ -403,20 +417,18 @@ async def test_authentication_error_handling():
     from botocore.exceptions import ClientError
 
     role_config = RoleConfig(
-        role_arn="arn:aws:iam::123456789012:role/InvalidRole",
-        account_id="123456789012"
+        role_arn="arn:aws:iam::123456789012:role/InvalidRole", account_id="123456789012"
     )
     config = AWSAuthConfig(roles={"invalid": role_config})
     auth_service = AWSAuthService(config)
 
-    with patch.object(auth_service, '_run_in_executor') as mock_executor:
+    with patch.object(auth_service, "_run_in_executor") as mock_executor:
         mock_executor.side_effect = ClientError(
-            {'Error': {'Code': 'AccessDenied', 'Message': 'Access Denied'}},
-            'AssumeRole'
+            {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}}, "AssumeRole"
         )
 
         with pytest.raises(AuthenticationError):
-            await auth_service.get_client('s3', role_name='invalid')
+            await auth_service.get_client("s3", role_name="invalid")
 ```
 
 ```bash

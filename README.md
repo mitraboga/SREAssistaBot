@@ -2,11 +2,13 @@
 
 # 🚨 SRE-Assist-Bot 🤖
 
-### IncidentIQ — Slack-Native SRE Assistant for Incident Triage, RAG & Alert Intelligence
+### IncidentIQ — React & Slack SRE Workspace for Incident Triage, RAG & Alert Intelligence
 
 <p align="center">
   <!-- Existing -->
   <img src="https://img.shields.io/badge/Python-3.11%2B-blue?logo=python">
+  <img src="https://img.shields.io/badge/React-Workspace-61DAFB?logo=react&logoColor=black">
+  <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript&logoColor=white">
   <img src="https://img.shields.io/badge/Slack-Bot-4A154B?logo=slack">
   <img src="https://img.shields.io/badge/Google%20ADK-Agent_Dev_Kit-4285F4?logo=google">
   <img src="https://img.shields.io/badge/FastAPI-API-009688?logo=fastapi">
@@ -55,6 +57,92 @@ tooling.
 ---
 
 ## What This Project Does
+
+### React Operations Workspace
+
+The `frontend/` React + TypeScript app adds four connected workflows:
+
+- **Incident board:** create/filter incidents, assign owners, update status,
+  track actions and timeline notes, and export a Markdown handoff.
+- **SRE assistant:** send messages to the existing ADK agent with incident context,
+  citation links, retry/cancel controls, and ADK history synchronization.
+- **Knowledge base:** browse/search the existing runbooks and past incidents,
+  read source documents, and inspect relative retrieval scores.
+- **Alert triage:** call the existing Python severity/routing classifier and
+  review known-issue evidence before taking action.
+
+#### Try the React demo
+
+Install **Git and Node.js 24** first. The default **Demo** environment needs no
+Python backend, model, Slack, AWS, Kubernetes, database, or API keys.
+
+The commands below download `main`, which includes the React workspace in
+`frontend/`.
+
+**Windows PowerShell:** open a terminal in the folder where you want to download
+the project, then run these commands one at a time:
+
+```powershell
+git clone --branch main https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+cd .\SREAssistaBot-React\frontend
+npm.cmd ci
+npm.cmd run dev
+```
+
+**macOS/Linux:** open a terminal in the folder where you want to download the
+project, then run:
+
+```bash
+git clone --branch main https://github.com/mitraboga/SREAssistaBot.git SREAssistaBot-React
+cd SREAssistaBot-React/frontend
+npm ci
+npm run dev
+```
+
+Wait for each command to finish; if one fails, resolve that error before moving
+on. Open the exact URL printed beside **Local:**, normally
+<http://localhost:5173>. Keep the terminal open while using the app; **Ctrl+C**
+stops the server. If port 5173 is occupied, Vite may print a different port.
+
+To start it again later, open a terminal in the downloaded project's `frontend/`
+folder and run `npm.cmd run dev` on Windows or `npm run dev` on macOS/Linux.
+You only need to install dependencies again after dependency changes.
+
+Try creating an incident, assigning an owner, checking response actions, adding
+timeline notes, and exporting a handoff. Then try the demo assistant's citations,
+knowledge search, and sample alerts. Demo assistant replies are canned; demo
+search and classification are simplified browser examples. Incident coordination
+is saved in this browser; demo/live data are stored separately.
+
+**Live AI:** start the configured Python API on port 8001, then switch to
+**Live API**. Live chat uses ADK sessions and requires a working model provider.
+See [frontend/README.md](frontend/README.md#connect-to-the-backend) for backend
+commands and [the local setup below](#recommended-local-setup) for provider setup.
+
+**Sharing:** `localhost` points to each visitor's own computer. These instructions
+let others run their own copy; there is no public React demo URL included in this
+change. A public demo requires deploying the frontend to a web host. Hosting only
+the frontend provides Demo mode; live AI also needs a deployed, configured API.
+See [frontend/README.md](frontend/README.md) for hosting considerations,
+architecture, API contracts, Docker setup, tests, and current scope.
+
+![React IncidentIQ workspace](assets/ReactWorkspace.png)
+
+<details>
+<summary>React assistant, knowledge explorer, alert triage, and mobile screenshots</summary>
+
+![React assistant](assets/ReactAssistant.png)
+![React knowledge explorer](assets/ReactKnowledge.png)
+![React alert triage](assets/ReactTriage.png)
+<img src="assets/ReactMobile.png" alt="React incident board on mobile" width="390">
+
+</details>
+
+The React app adds strict TypeScript, client-side routing, accessible forms,
+responsive layouts, REST integration, Vitest/React Testing Library tests,
+Playwright desktop/mobile workflow tests, and a dedicated CI workflow.
+
+### Existing Agent Workflows
 
 SRE AssistaBot lets an engineer ask operational questions in Slack threads or
 through the ADK Web UI. The root SRE agent can answer general reliability
@@ -382,7 +470,7 @@ must match the evidence:
 ## Architecture
 
 ```text
-Slack / ADK Web UI / API clients
+React workspace / Slack / ADK Web UI / API clients
         |
         v
 FastAPI ADK server: agents/sre_agent/serve.py

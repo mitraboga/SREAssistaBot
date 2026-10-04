@@ -98,7 +98,9 @@ def classify_alert_for_escalation(
     is_transient = _contains_any(text_lower, TRANSIENT_TERMS)
 
     known_matches = retrieve_documents(alert_text, top_k=3)
-    known_issue = known_matches[0] if known_matches and known_matches[0]["confidence"] >= 0.35 else None
+    known_issue = (
+        known_matches[0] if known_matches and known_matches[0]["confidence"] >= 0.35 else None
+    )
 
     if severity == "p1" or (has_high_impact and not (no_customer_impact or non_production)):
         recommended_severity = "P2"

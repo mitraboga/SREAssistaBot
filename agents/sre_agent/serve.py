@@ -15,9 +15,11 @@ from google.adk.cli.fast_api import get_fast_api_app
 try:
     from .utils import get_logger
     from .settings import get_db_url, redact_db_url
+    from .web_api import router as workspace_router
 except ImportError:
     from utils import get_logger
     from settings import get_db_url, redact_db_url
+    from sre_agent.web_api import router as workspace_router
 
 logger = get_logger(__name__)
 
@@ -66,6 +68,7 @@ def create_app() -> FastAPI:
     )
 
     app.add_middleware(RequestLoggingMiddleware)
+    app.include_router(workspace_router)
 
     @app.get("/health")
     async def health_check():
